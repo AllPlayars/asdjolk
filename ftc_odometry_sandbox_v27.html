@@ -2379,6 +2379,22 @@ body.ui-no-v3d .v3d { display: block; }
 .v27-score th.red { color: #e53935; } .v27-score th.blue { color: #1e63d6; }
 .v27-score tr.tot td { font-weight: 700; }
 .v27-notes { font-size: 11px; margin-top: 4px; line-height: 1.4; }
+/* v27.1: dois controles */
+.gp2-panel { margin-top: 10px; border-top: 1px solid var(--border, #ddd); padding-top: 8px; display: flex; flex-direction: column; gap: 6px; }
+.gp2-title { font-weight: 700; font-size: 12px; }
+.gp2-help { font-size: 11px; line-height: 1.4; color: var(--text-muted, #888); margin: 0; }
+.gp2-list { display: flex; flex-direction: column; gap: 5px; }
+.gp2-card { display: grid; grid-template-columns: auto 1fr; gap: 2px 8px; padding: 6px 8px; border-radius: 8px; border: 1.5px solid var(--border, #ccc); font-size: 11.5px; transition: background-color .1s; }
+.gp2-card.r1 { border-color: #2e7d32; } .gp2-card.r2 { border-color: #f9a825; }
+.gp2-card.act { background: rgba(46,125,50,.16); }
+.gp2-card.r2.act { background: rgba(249,168,37,.18); }
+.gp2-card.blink { background: rgba(0,118,253,.35); }
+.gp2-role { font-weight: 700; grid-row: span 2; align-self: center; min-width: 74px; }
+.gp2-card.r1 .gp2-role { color: #2e7d32; } .gp2-card.r2 .gp2-role { color: #c17900; } .gp2-card.r0 .gp2-role { color: var(--text-muted, #888); }
+.gp2-id { font-family: 'JetBrains Mono', monospace; word-break: break-word; }
+.gp2-last, .gp2-same, .gp2-empty { font-size: 10.5px; color: var(--text-muted, #888); }
+.gp2-same { color: #e65100; }
+.gp2-btns { display: flex; flex-wrap: wrap; gap: 6px; }
     </style>
 </head>
 <body>
@@ -2388,7 +2404,7 @@ body.ui-no-v3d .v3d { display: block; }
             <div class="brand-icon">FTC</div>
             <div class="brand-text">
                 <h1>Odometry Sandbox</h1>
-                <p>v27.0 · Alpha · Pontuação do jogo · IA em 3 níveis · Ruído e inércia</p>
+                <p>v27.1 · Alpha · Pontuação do jogo · IA em 3 níveis · Dois controles</p>
             </div>
         </div>
         <nav class="header-nav app-nav" aria-label="Navegação">
@@ -2471,7 +2487,7 @@ body.ui-no-v3d .v3d { display: block; }
                             <div class="key" id="key-left"><svg viewBox="0 0 12 12"><polyline points="7,2 3,6 7,10"/></svg></div>
                             <div class="key" id="key-right"><svg viewBox="0 0 12 12"><polyline points="5,2 9,6 5,10"/></svg></div>
                         </div>
-                        <div class="kbd-mini">gamepad1: W/S = left_stick_y · A/D = left_stick_x · ←/→ = right_stick_x · Space = a · B/X/Y · Q/E = bumpers · ↑/↓ = dpad</div>
+                        <div class="kbd-mini">gamepad1: W/S = left_stick_y · A/D = left_stick_x · ←/→ = right_stick_x · Space = a · B/X/Y · Q/E = bumpers · ↑/↓ = dpad · Z/C = dpad ◀/▶ · F/G = LT/RT</div>
                     </div>
                 </div>
                 <div class="gp-row">
@@ -2630,7 +2646,7 @@ body.ui-no-v3d .v3d { display: block; }
         <div class="status-bar">
             <div class="status-dot" id="status-dot"></div>
             <div class="status-text" id="compile-status">✅ Compilado com sucesso e rodando (Aguardando)</div>
-            <div class="status-env" data-i18n="statusEnv">Sandbox v27.0 (Monaco IDE)</div>
+            <div class="status-env" data-i18n="statusEnv">Sandbox v27.1 (Monaco IDE)</div>
         </div>
     </div>
 
@@ -2927,7 +2943,7 @@ const i18nV17 = {
     ko:["키보드와 게임패드","🎮 컨트롤러(USB 또는 블루투스)를 연결하고 아무 버튼이나 누르세요.","🎮 컨트롤러 연결됨"],
     ar:["لوحة المفاتيح وذراع التحكم","🎮 وصّل ذراع تحكم (USB أو Bluetooth) واضغط أي زر.","🎮 ذراع التحكم متصل"]
 };
-const SANDBOX_VERSION = 'v27.0';
+const SANDBOX_VERSION = 'v27.1';
 for (const l in i18nExtra) {
     Object.assign(i18n[l], i18nExtra[l]);
     I18N_V16_KEYS.forEach((k, i) => { i18n[l][k] = i18nV16Rows[l][i]; });
@@ -3233,6 +3249,8 @@ function buildGamepad(n = 1) {
         g.left_bumper = g.left_bumper || isKeyPressed('q'); g.right_bumper = g.right_bumper || isKeyPressed('e');
         g.dpad_up = g.dpad_up || !!keys['ArrowUp']; g.dpad_down = g.dpad_down || !!keys['ArrowDown'];
         g.dpad_left = g.dpad_left || isKeyPressed('z'); g.dpad_right = g.dpad_right || isKeyPressed('c');   // v25: Z / C = ← → do D-pad
+        // v27.1: F / G = gatilhos esquerdo e direito (left_trigger / right_trigger)
+        if (isKeyPressed('f')) g.left_trigger = 1; if (isKeyPressed('g')) g.right_trigger = 1;
     }
     return g;
 }
@@ -13041,7 +13059,7 @@ function frReferenceEl() {
             ['public static class Pose { ... }  →  new Geo.Pose(1, 2)', pt ? 'classe interna (static)' : 'nested (static) class'],
             [pt ? 'Não simulado' : 'Not simulated', pt ? 'classes anônimas, lambdas, genéricos próprios (class Caixa<T>) e records' : 'anonymous classes, lambdas, own generics (class Box<T>) and records']]),
         sec('gamepad1 / gamepad2', null, [['left_stick_x, left_stick_y, right_stick_x, right_stick_y', pt ? 'para cima = -1' : 'up = -1'], ['a, b, x, y, left_bumper, right_bumper, dpad_up…', ''], ['left_trigger, right_trigger', '0..1'], ['aWasPressed(), bWasReleased()…', ''], ['rumble(ms), rumbleBlips(n)', ''],
-            [pt ? 'Teclado' : 'Keyboard', pt ? 'W/S/A/D = left_stick, ←/→ = right_stick_x, Espaço = a, B, X, Y, Q/E = bumpers, ↑/↓ = dpad' : 'W/S/A/D = left_stick, ←/→ = right_stick_x, Space = a, B, X, Y, Q/E = bumpers, ↑/↓ = dpad']]),
+            [pt ? 'Teclado' : 'Keyboard', pt ? 'W/S/A/D = left_stick, ←/→ = right_stick_x, Espaço = a, B, X, Y, Q/E = bumpers, ↑/↓ = dpad, Z/C = dpad ◀/▶, F/G = left_trigger/right_trigger' : 'W/S/A/D = left_stick, ←/→ = right_stick_x, Space = a, B, X, Y, Q/E = bumpers, Z/C = dpad ◀/▶, F/G = left_trigger/right_trigger, ↑/↓ = dpad']]),
         frSens() ? sec('goBILDA Pinpoint V2', 'import com.qualcomm.hardware.gobilda.GoBildaPinpointDriver;\nimport org.firstinspires.ftc.robotcore.external.navigation.Pose2D;\nimport org.firstinspires.ftc.robotcore.external.navigation.DistanceUnit;\nimport org.firstinspires.ftc.robotcore.external.navigation.AngleUnit;', [
             ['hardwareMap.get(GoBildaPinpointDriver.class, "pinpoint")', pt ? 'configurado no I2C Bus 1 (não no 0, que é da IMU)' : 'configured on I2C Bus 1 (not 0, which is the IMU)'],
             ['setOffsets(x, y, DistanceUnit.MM)', pt ? 'x: quanto o pod X está para o lado (esquerda +); y: quanto o pod Y está para a frente (frente +)' : 'x: how far sideways the X pod is (left +); y: how far forward the Y pod is (forward +)'],
@@ -17364,6 +17382,18 @@ function bbMechStep(dt, pose) {
         const lim = i === 0 ? 1 : st[i - 1].q - 0.3;
         st[i].q = Math.min(lim, q);
     }
+    // v27.1: com o intake puxando, a peça de trás empurra as da frente (encostadas, a 0,3 uma da outra), mesmo com a
+    // esteira parada — assim cabem as 4 peças (antes, sem o midtake, a segunda ficava na boca e a terceira não entrava).
+    // Sem a esteira, a da frente para logo antes do lançador (0,97): só o midtake a coloca nele.
+    if (M.intake > 0.3 && st.length) {
+        const n = st.length, rear = st[n - 1], top = M.mid > 0.2 ? 1 : 0.97;
+        let want = rear.q < 0.35 ? Math.min(0.35, rear.q + 1.0 * dt) : rear.q;
+        want = Math.min(want, top - 0.3 * (n - 1));
+        if (want > rear.q) {
+            rear.q = want;
+            for (let i = n - 2; i >= 0; i--) st[i].q = Math.min(top, Math.max(st[i].q, st[i + 1].q + 0.3));
+        }
+    }
     // peça dentro do lançador: anda pelo caminho (arco do capô, ou reta entre os dois volantes) e sai pela boca
     M.jam = false;
     if (M.shot) bbShotStep(dt, pose);
@@ -17923,12 +17953,13 @@ ${tur ? '' : `//   ${U.shooter === 'back' ? L('Para mirar, vire a traseira do ro
 `}
 // ${L('Teclado = gamepad1:', 'Keyboard = gamepad1:')}
 //   W A S D ${L('andam', 'drive')}, ← → ${L('giram', 'turn')}
-//   ${L('Espaço (A) = intake (puxa as peças)', 'Space (A) = intake (pulls pieces in)')}
-//   Y = ${L('liga/desliga ' + VO, VD + ' on/off')}    ↑ ↓ = ${L('velocidade ' + VD, VD + ' speed')}
+//   ${L('Espaço (A) = liga/desliga o intake (puxa as peças; cabem 4)', 'Space (A) = intake on/off (pulls pieces in; 4 fit)')}
+//   Y = ${L('liga/desliga ' + VO, VD + ' on/off')}    ↑ ↓ = ${L('velocidade ' + VD, VD + ' speed')}${hoodS ? L(' (sem o RT)', ' (without RT)') : ''}
 //   X = ${L('atira (só quando ' + VO + (inl ? ' chegaram' : ' chegou') + ' na velocidade)', 'fire (only when ' + VO + (inl ? ' are' : ' is') + ' at speed)')}
-${tur ? `//   Q / E = ${L('gira a torreta', 'turn the turret')}
-` : ''}${hoodS ? `//   Z / C = ${L('abaixa / levanta o capô (← → do D-pad)', 'lower / raise the hood (D-pad ← →)')}
-` : ''}//   B = ${L('estende / recolhe o braço (depois de recolher, Espaço puxa o POLLEN do braço)', 'extend / retract the arm (after retracting, Space pulls the POLLEN off the arm)')}
+${tur ? `//   Q / E = ${L('gira a torreta', 'turn the turret')}    F (LT) = ${L('torreta para a frente', 'turret forward')}
+` : ''}${hoodS ? `//   G (RT) + ↑ / ↓ = ${L('levanta / abaixa o capô (tiro mais em pé / mais deitado)', 'raise / lower the hood (steeper / flatter shot)')}
+` : ''}//   B = ${L('estende / recolhe o braço (depois de recolher, com o intake ligado, o POLLEN do braço entra)', 'extend / retract the arm (after retracting, with the intake on, the POLLEN on the arm goes in)')}
+//   ${L('Z / C (◀ ▶ do D-pad) e o analógico direito ↕ ficam livres para girar e inclinar a vista 3D', 'Z / C (D-pad ◀ ▶) and the right stick ↕ stay free to turn and tilt the 3D view')}
 @TeleOp(name = "${N.title}", group = "${L('Exemplos BIOBUZZ', 'BIOBUZZ examples')}")
 // ${L('Lançador', 'Shooter')}: ${kind}${two ? L(' — dois motores (portas 3 e 2)', ' — two motors (ports 3 and 2)') : ''}
 public class ${N.cls} extends LinearOpMode {
@@ -17960,7 +17991,7 @@ ${two ? `        // ${L('o segundo motor está montado de frente para o primeiro
         double alvo = VEL_INICIAL;
 ${tur ? `        double posTorreta = 0.5;
 ` : ''}${hoodS ? `        double posCapo = ${hood0};   // ${L(`0 = ${hr[0]}°, 1 = ${hr[1]}°`, `0 = ${hr[0]}°, 1 = ${hr[1]}°`)}
-` : ''}        boolean volante = false, bracoFora = false;
+` : ''}        boolean volante = false, bracoFora = false, intakeLigado = false;
         boolean yAntes = false, bAntes = false, cimaAntes = false, baixoAntes = false;
 
 ${c270 ? `        // ${L('câmera C270: as AprilTags do BIOBUZZ. A pose da câmera no robô vem da montagem da vista 3D', 'C270 camera: the BIOBUZZ AprilTags. The camera pose on the robot comes from the mount in the 3D view')}
@@ -18027,8 +18058,10 @@ ${cor ? `        // ${L('A C270 está a 0°: além das tags, ela vê o chão à 
 
             // ${L(VT.toLowerCase() + ': Y liga/desliga, ↑ ↓ mudam a velocidade', VT.toLowerCase() + ': Y toggles, ↑ ↓ change the speed')}
             if (gamepad1.y && !yAntes) volante = !volante;
-            if (gamepad1.dpad_up && !cimaAntes) alvo = Math.min(2800, alvo + 100);
-            if (gamepad1.dpad_down && !baixoAntes) alvo = Math.max(500, alvo - 100);
+${hoodS ? `            boolean ajustaCapo = gamepad1.right_trigger > 0.3;   // ${L('com o RT apertado, ↑ ↓ mexem no capô, e não na velocidade', 'with RT held, ↑ ↓ move the hood instead of the speed')}
+            if (!ajustaCapo && gamepad1.dpad_up && !cimaAntes) alvo = Math.min(2800, alvo + 100);
+            if (!ajustaCapo && gamepad1.dpad_down && !baixoAntes) alvo = Math.max(500, alvo - 100);` : `            if (gamepad1.dpad_up && !cimaAntes) alvo = Math.min(2800, alvo + 100);
+            if (gamepad1.dpad_down && !baixoAntes) alvo = Math.max(500, alvo - 100);`}
             shooter.setVelocity(volante ? alvo : 0);
 ${two ? `            shooter2.setVelocity(volante ? alvo : 0);
             double vel = (shooter.getVelocity() + shooter2.getVelocity()) / 2;
@@ -18036,26 +18069,25 @@ ${two ? `            shooter2.setVelocity(volante ? alvo : 0);
 ` : `            double vel = shooter.getVelocity();
             boolean pronto = volante && Math.abs(vel - alvo) < 60;
 `}
-            // ${L('intake e midtake: X só atira com ' + VO + (inl ? ' prontas' : ' pronto'), 'intake and midtake: X only fires when ' + VO + (inl ? ' are' : ' is') + ' ready')}
+            // ${L('midtake: X atira (leva a peça da frente ao lançador), só com ' + VO + (inl ? ' prontas' : ' pronto'), 'midtake: X fires (carries the front piece into the shooter), only when ' + VO + (inl ? ' are' : ' is') + ' ready')}
             if (gamepad1.x && pronto) {
                 midtake.setPower(1);
-                intake.setPower(0.5);
-            } else if (gamepad1.a) {
-                intake.setPower(1);
-                midtake.setPower(0.3);
             } else {
-                intake.setPower(0);
                 midtake.setPower(0);
             }
+            // ${L('intake: A liga e desliga (aWasPressed é verdadeiro só no quadro em que o botão foi apertado)', 'intake: A toggles it (aWasPressed is true only on the frame the button was pressed)')}
+            if (gamepad1.aWasPressed()) intakeLigado = !intakeLigado;
+            intake.setPower(intakeLigado ? 1 : 0);
 
 ${tur ? `            // ${L('torreta: 0,5 = frente; 0 e 1 = 180° para cada lado (batente: não passa de ±180°)', 'turret: 0.5 = forward; 0 and 1 = 180° to each side (hard stop: never past ±180°)')}
             if (gamepad1.left_bumper) posTorreta += 0.01;
             if (gamepad1.right_bumper) posTorreta -= 0.01;
             posTorreta = Range.clip(posTorreta, 0, 1);
+            if (gamepad1.left_trigger > 0.3) posTorreta = 0.5;   // ${L('LT: torreta de volta para a frente', 'LT: turret back to forward')}
             turret.setPosition(posTorreta);
-` : ''}${hoodS ? `            // ${L('capô: ← abaixa (tiro mais deitado), → levanta (tiro mais em pé)', 'hood: ← lowers (flatter shot), → raises (steeper shot)')}
-            if (gamepad1.dpad_left) posCapo -= 0.01;
-            if (gamepad1.dpad_right) posCapo += 0.01;
+` : ''}${hoodS ? `            // ${L('capô: RT + ↑ levanta (tiro mais em pé), RT + ↓ abaixa (tiro mais deitado)', 'hood: RT + ↑ raises (steeper shot), RT + ↓ lowers (flatter shot)')}
+            if (ajustaCapo && gamepad1.dpad_up) posCapo += 0.01;
+            if (ajustaCapo && gamepad1.dpad_down) posCapo -= 0.01;
             posCapo = Range.clip(posCapo, 0, 1);
             hood.setPosition(posCapo);
 ` : ''}
@@ -18071,6 +18103,7 @@ ${tur ? `            // ${L('torreta: 0,5 = frente; 0 e 1 = 180° para cada lado
 ${tur ? `            telemetry.addData("${L('Torreta', 'Turret')}", "%.0f°", (posTorreta - 0.5) * 360);
 ` : ''}${hoodS ? `            telemetry.addData("${L('Capô', 'Hood')}", "%.0f°", ${hr[0]} + posCapo * ${hr[1] - hr[0]});
 ` : ''}            telemetry.addData("${L('Braço', 'Arm')}", bracoFora ? "${L('fora', 'out')}" : "${L('dentro', 'in')}");
+            telemetry.addData("Intake", intakeLigado ? "${L('ligado', 'on')}" : "${L('desligado', 'off')}");
 ${c270 ? `            // ${L('C270: quantas tags estão na imagem e onde o robô está, pela primeira tag que der o robotPose', 'C270: how many tags are in the image and where the robot is, from the first tag that gives the robotPose')}
             int nTags = tags.getDetections().size();
             telemetry.addData("${L('Tags vistas (C270)', 'Tags seen (C270)')}", nTags);
@@ -18094,7 +18127,7 @@ ${c270 ? `            // ${L('C270: quantas tags estão na imagem e onde o robô
             }
             // ${L('a peça estava na beirada de baixo (y > 400 de 480) e sumiu com o intake puxando: entrou', 'the piece was at the bottom edge (y > 400 of 480) and disappeared with the intake pulling: it went in')}
             boolean sumiu = yPerto < yPecaAntes - 60 || perto.isEmpty();
-            if (gamepad1.a && yPecaAntes > 400 && sumiu) {
+            if (intakeLigado && yPecaAntes > 400 && sumiu) {
                 if (pecaAntes.equals("POLLEN")) pegouPollen++;
                 else if (pecaAntes.startsWith("NECTAR") || pecaAntes.endsWith("NECTAR")) pegouNectar++;
             }
@@ -18788,15 +18821,15 @@ function v3dCamView(R, P, scale, ox, oy) {
 
 /* ---------------- painel "Vista 3D" ---------------- */
 const V3D = {
-    mode: 'arena', follow: false, chase: true, camPad1: true, showEst: true, showRays: true, showFov: true, showTrajP: true, showTrajN: true,
+    mode: 'arena', follow: false, chase: true, camPadYaw: true, camPadPitch: true, showEst: true, showRays: true, showFov: true, showTrajP: true, showTrajN: true,
     orbit: { a: 0, e: 32, D: 195, t: v3(0, -10, 10) },
     el: null, R: null, last: 0, dirty: true, visible: false,
     camChoice: 'c270'          // câmera usada pelo código no modo pontual de visão
 };
 const V3T = {
     title: ['🧊 Vista 3D do campo', '🧊 3D field view'], arena: ['🏟 Arena', '🏟 Arena'], c270: ['📷 C270', '📷 C270'], ll: ['🟩 Limelight', '🟩 Limelight'],
-    follow: ['Seguir o robô', 'Follow robot'], chase: ['girar junto com o robô', 'turn with the robot'], pad1: ['câmera no gamepad1', 'camera on gamepad1'],
-    camKeys: ['Câmera seguindo o robô — teclado: J / L gira, I / K sobe e desce, U / O aproxima e afasta · controle: gamepad2 (analógico direito gira e inclina, LB / RB aproximam) ou, com a opção ligada, gamepad1 (D-pad ◀ ▶ gira, analógico direito ↕ inclina, R3 + analógico direito aproxima)', 'Camera following the robot — keyboard: J / L orbit, I / K tilt, U / O zoom · controller: gamepad2 (right stick orbits and tilts, LB / RB zoom) or, with the option on, gamepad1 (D-pad ◀ ▶ orbits, right stick ↕ tilts, R3 + right stick zooms)'], est: ['Robô estimado', 'Estimated robot'], rays: ['Raios até as tags', 'Rays to tags'], fov: ['Campo de visão', 'Field of view'],
+    follow: ['Seguir o robô', 'Follow robot'], chase: ['girar junto com o robô', 'turn with the robot'], padYaw: ['🎮 D-pad ◀ ▶ gira a vista', '🎮 D-pad ◀ ▶ turns the view'], padPitch: ['🎮 analógico direito ↕ inclina', '🎮 right stick ↕ tilts'],
+    camKeys: ['Câmera da arena (com ou sem "Seguir o robô") — teclado: J / L gira, I / K sobe e desce, U / O aproxima e afasta · controle: gamepad2 (analógico direito gira e inclina, LB / RB aproximam) e, cada um com a sua opção ligada, gamepad1 (D-pad ◀ ▶ gira; analógico direito ↕ inclina, e com R3 apertado aproxima)', 'Arena camera (with or without "Follow robot") — keyboard: J / L orbit, I / K tilt, U / O zoom · controller: gamepad2 (right stick orbits and tilts, LB / RB zoom) and, each with its own option on, gamepad1 (D-pad ◀ ▶ orbits; right stick ↕ tilts, zooming while R3 is held)'], est: ['Robô estimado', 'Estimated robot'], rays: ['Raios até as tags', 'Rays to tags'], fov: ['Campo de visão', 'Field of view'],
     field: ['Campo', 'Field'], treino: ['Treino (tags nas paredes)', 'Training (wall tags)'], biobuzz: ['BIOBUZZ 2026-27 (HIVEs)', 'BIOBUZZ 2026-27 (HIVEs)'],
     pitch: ['Inclinação', 'Tilt'], height: ['altura', 'height'], hive: ['CELL para cima', 'CELL facing up'], aud: ['plateia', 'audience'], far: ['lado oposto', 'far side'],
     red: ['HIVE vermelha', 'Red HIVE'], blue: ['HIVE azul', 'Blue HIVE'], reset: ['⟲ Vista', '⟲ View'],
@@ -18863,8 +18896,8 @@ function v3dRender() {
     const g = R.g;
     if (mode === 'arena') {
         let orb = V.orbit;
+        v3dCamInput();   // v27.1: o controle e o teclado giram a vista da arena também sem "Seguir o robô"
         if (V.follow) {
-            v3dCamInput();
             V.orbit.t = v3(pose.x, pose.y, 8);
             // "girar com o robô": o ângulo da órbita é medido a partir de trás do robô
             if (V.chase) orb = Object.assign({}, V.orbit, { a: V.orbit.a + pose.h - 90 });
@@ -18926,10 +18959,10 @@ function v3dCamInput() {
     const g2 = pads[1];
     if (g2) { da -= dead(g2.right_stick_x); de -= dead(g2.right_stick_y); dz += (g2.right_bumper ? -1 : 0) + (g2.left_bumper ? 1 : 0); }
     const g1 = pads[0];
-    if (g1 && V3D.camPad1) {
-        da += (g1.dpad_left ? 1 : 0) - (g1.dpad_right ? 1 : 0);
-        if (g1.right_stick_button) dz += dead(g1.right_stick_y); else de -= dead(g1.right_stick_y);
-    }
+    // v27.1: no gamepad1, cada movimento da vista liga e desliga separado (as opções da barra da vista 3D):
+    // ◀ ▶ do D-pad giram; o analógico direito ↕ inclina (com R3 apertado, aproxima)
+    if (g1 && V3D.camPadYaw) da += (g1.dpad_left ? 1 : 0) - (g1.dpad_right ? 1 : 0);
+    if (g1 && V3D.camPadPitch) { if (g1.right_stick_button) dz += dead(g1.right_stick_y); else de -= dead(g1.right_stick_y); }
     if (!da && !de && !dz) return;
     o.a = ((o.a + da * 90 * dt) % 360 + 360) % 360;                 // 90°/s
     o.e = Math.max(-5, Math.min(89, o.e + de * 45 * dt));          // 45°/s
@@ -19075,7 +19108,7 @@ function v3dBuild() {
     const matchCol = h('div', { class: 'v3d-cfgc v3d-cfg-match' }, typeof mtPanelEl === 'function' ? mtPanelEl() : null);
     const card = h('section', { class: 'card v3d', id: 'v3d' },
         h('div', { class: 'v3d-head' }, h('h3', { text: v3t('title') }), h('label', { class: 'v3d-chk' }, v3t('field') + ': ', fieldSel)),
-        h('div', { class: 'v3d-bar' }, seg, chk('follow', 'follow'), h('span', { class: 'v3d-follow-opts' }, chk('chase', 'chase'), chk('camPad1', 'pad1')), chk('showEst', 'est'), chk('showRays', 'rays'), chk('showFov', 'fov'), chk('showTrajP', 'trajP'), chk('showTrajN', 'trajN'),
+        h('div', { class: 'v3d-bar' }, seg, chk('follow', 'follow'), h('span', { class: 'v3d-follow-opts' }, chk('chase', 'chase')), chk('camPadYaw', 'padYaw'), chk('camPadPitch', 'padPitch'), chk('showEst', 'est'), chk('showRays', 'rays'), chk('showFov', 'fov'), chk('showTrajP', 'trajP'), chk('showTrajN', 'trajN'),
             h('button', { class: 'btn small', text: v3t('reset'), onclick: () => { V3D.orbit = { a: 0, e: 32, D: 195, t: v3(0, -10, 10) }; V3D.mode = 'arena'; seg.querySelectorAll('.v3d-sb').forEach(b => b.classList.toggle('on', b.dataset.m === 'arena')); v3dRender(); } })),
         h('div', { class: 'v3d-main' },
             h('div', { class: 'v3d-cvwrap' }, cv),
@@ -19155,7 +19188,7 @@ function v3dSync() {
     const mc = el.querySelector('.v3d-cfg-match'); if (mc) mc.hidden = !full;
     const ks = el.querySelector('.v3d-keys'); if (ks) ks.hidden = full;
     const fo = el.querySelector('.v3d-follow-opts'); if (fo) fo.hidden = !V3D.follow;
-    const ck = el.querySelector('.v3d-camkeys'); if (ck) ck.hidden = !V3D.follow;
+    const ck = el.querySelector('.v3d-camkeys'); if (ck) ck.hidden = V3D.mode !== 'arena';   // v27.1: vale também sem seguir o robô
     const fc = el.querySelector('.v3d-follow'); if (fc) fc.checked = V3D.follow;
     el.querySelectorAll('.v3d-hb').forEach(b => b.classList.toggle('primary', F3.hive[b.dataset.side] === b.dataset.st));
     if (typeof BBG !== 'undefined') {
@@ -21627,6 +21660,113 @@ function v27BoardHtml() {
 (function () {
     const ss = simulateStep;
     simulateStep = function () { const r = ss.apply(this, arguments); try { v27PaintRobot(); } catch (e) {} return r; };
+})();
+
+/* =====================================================================
+   v27.1: DOIS CONTROLES (gamepad1 e gamepad2)
+   - como no Driver Station: Start + A no controle que vai ser o gamepad1,
+     Start + B no que vai ser o gamepad2 (sem isso, o primeiro conectado é
+     o gamepad1 e o segundo, o gamepad2);
+   - cada controle aparece com o número que o navegador dá a ele (#0, #1…),
+     porque dois controles iguais têm o mesmo nome;
+   - teste: o cartão de cada controle acende quando ele é usado e mostra o
+     último botão; "Identificar" vibra o gamepad1 uma vez e o gamepad2 duas
+     vezes, e pisca os cartões do mesmo jeito.
+   ===================================================================== */
+const GPA = { 1: null, 2: null, held: {}, last: {}, act: {}, blink: {} };
+const gpaName = p => String(p.id || 'Gamepad').replace(/\s*\(.*?\)\s*/g, ' ').trim().slice(0, 34) || 'Gamepad';
+function gpaAssign(slot, index) {
+    const other = slot === 1 ? 2 : 1;
+    if (GPA[other] === index) GPA[other] = null;
+    GPA[slot] = index;
+    if (typeof toast === 'function') toast(FRT(`Controle #${index} agora é o gamepad${slot}`, `Controller #${index} is now gamepad${slot}`));
+    if (typeof updateGamepadStatus === 'function') updateGamepadStatus(true);
+}
+function gpaConnected() {
+    let pads = [];
+    try { pads = navigator.getGamepads ? Array.from(navigator.getGamepads()).filter(p => p && p.connected) : []; } catch (e) { pads = []; }
+    return pads.sort((a, b) => a.index - b.index);
+}
+pollGamepads = function () {
+    const pads = gpaConnected(), snaps = {};
+    for (const p of pads) {
+        const s = snapshotPad(p); snaps[p.index] = s;
+        // Start + A / Start + B (na borda: só quando a combinação começa)
+        const combo = s.start && s.a ? 1 : s.start && s.b ? 2 : 0;
+        if (combo && GPA.held[p.index] !== combo) gpaAssign(combo, p.index);
+        GPA.held[p.index] = combo;
+        // com o Start apertado, o A e o B não chegam ao código (como no Driver Station)
+        if (s.start) { s.a = false; s.b = false; }
+        // teste: houve uso agora? (botão, gatilho ou analógico)
+        const btn = Object.keys(GP_BUTTONS).find(k => s[k]);
+        const ax = Math.max(Math.abs(s.left_stick_x), Math.abs(s.left_stick_y), Math.abs(s.right_stick_x), Math.abs(s.right_stick_y), s.left_trigger, s.right_trigger);
+        if (btn || ax > 0.3) { GPA.act[p.index] = performance.now(); GPA.last[p.index] = btn || (s.left_trigger > 0.3 ? 'left_trigger' : s.right_trigger > 0.3 ? 'right_trigger' : FRT('analógico', 'stick')); }
+    }
+    for (const sl of [1, 2]) if (GPA[sl] !== null && !snaps[GPA[sl]]) GPA[sl] = null;   // desconectou
+    let i1 = GPA[1], i2 = GPA[2];
+    // sem escolha: o primeiro conectado é o gamepad1 e o próximo livre, o gamepad2
+    const free = pads.map(p => p.index).filter(i => i !== i1 && i !== i2);
+    if (i1 === null && GPA[2] === null) i1 = free.shift() ?? null;
+    if (i2 === null && GPA[1] === null) i2 = free.shift() ?? null;
+    physicalPads = [i1 !== null && snaps[i1] ? snaps[i1] : null, i2 !== null && snaps[i2] ? snaps[i2] : null];
+    GPA.cur = { 1: i1, 2: i2, pads };
+};
+// "Identificar": o gamepad1 vibra e pisca uma vez; o gamepad2, duas
+function gpaIdentify() {
+    const pulses = { 1: [[0, 450]], 2: [[0, 180], [320, 180]] };
+    for (const sl of [1, 2]) {
+        const idx = GPA.cur && GPA.cur[sl]; if (idx === null || idx === undefined) continue;
+        GPA.blink[idx] = { t: performance.now(), n: sl };
+        let pad = null; try { pad = navigator.getGamepads()[idx]; } catch (e) {}
+        const va = pad && pad.vibrationActuator;
+        for (const [t0, d] of pulses[sl]) setTimeout(() => { try { if (va && va.playEffect) va.playEffect(va.type || 'dual-rumble', { startDelay: 0, duration: d, strongMagnitude: 1, weakMagnitude: 1 }).catch(() => {}); } catch (e) {} }, t0);
+    }
+    if (!GPA.cur || (GPA.cur[1] === null && GPA.cur[2] === null)) toast(FRT('Nenhum controle conectado: aperte um botão no controle para o navegador o reconhecer', 'No controller connected: press a button on the controller so the browser detects it'));
+}
+function gpaPanelEl() {
+    return h('div', { class: 'gp2-panel', id: 'gp2-panel' },
+        h('div', { class: 'gp2-title', text: FRT('🎮 Dois controles: gamepad1 e gamepad2', '🎮 Two controllers: gamepad1 and gamepad2') }),
+        h('p', { class: 'gp2-help', html: FRT('Como no Driver Station: aperte <b>Start + A</b> no controle que vai ser o <b>gamepad1</b> e <b>Start + B</b> no que vai ser o <b>gamepad2</b>. Sem isso, o primeiro controle conectado é o gamepad1 e o segundo, o gamepad2. O teclado é sempre o gamepad1. Dois controles iguais têm o mesmo nome: o número (#0, #1) é o que os diferencia.',
+            'As on the Driver Station: press <b>Start + A</b> on the controller that will be <b>gamepad1</b> and <b>Start + B</b> on the one that will be <b>gamepad2</b>. Otherwise, the first connected controller is gamepad1 and the second is gamepad2. The keyboard is always gamepad1. Two identical controllers have the same name: the number (#0, #1) tells them apart.') }),
+        h('div', { class: 'gp2-list', id: 'gp2-list' }),
+        h('div', { class: 'gp2-btns' },
+            h('button', { class: 'act-btn', text: FRT('🔎 Identificar (vibra 1× o gamepad1 e 2× o gamepad2)', '🔎 Identify (buzzes gamepad1 once, gamepad2 twice)'), onclick: gpaIdentify }),
+            h('button', { class: 'act-btn', text: FRT('⇄ Trocar 1 e 2', '⇄ Swap 1 and 2'), onclick: () => { const c = GPA.cur || {}, a = c[1] ?? null, b = c[2] ?? null; GPA[1] = b; GPA[2] = a; updateGamepadStatus(true); } }),
+            h('button', { class: 'act-btn', text: FRT('↺ Automático', '↺ Automatic'), onclick: () => { GPA[1] = GPA[2] = null; updateGamepadStatus(true); } })));
+}
+function gpaRender() {
+    const list = document.getElementById('gp2-list'); if (!list || !list.isConnected) return;
+    const c = GPA.cur || { pads: [] }, now = performance.now();
+    const names = {}; for (const p of c.pads) { const n = gpaName(p); names[n] = (names[n] || 0) + 1; }
+    let html = '';
+    if (!c.pads.length) html = `<div class="gp2-empty">${FRT('Nenhum controle conectado. Conecte por USB ou Bluetooth e aperte qualquer botão.', 'No controller connected. Connect via USB or Bluetooth and press any button.')}</div>`;
+    for (const p of c.pads) {
+        const role = c[1] === p.index ? 1 : c[2] === p.index ? 2 : 0;
+        const active = now - (GPA.act[p.index] || 0) < 250;
+        const bl = GPA.blink[p.index], blinkOn = bl && Array.from({ length: bl.n }, (_, k) => now - bl.t - k * 320).some(d => d >= 0 && d < 200);
+        const same = names[gpaName(p)] > 1 ? ` <span class="gp2-same">${FRT('mesmo nome de outro: use o número', 'same name as another: use the number')}</span>` : '';
+        html += `<div class="gp2-card r${role}${active ? ' act' : ''}${blinkOn ? ' blink' : ''}"><span class="gp2-role">${role ? 'gamepad' + role : FRT('sem função', 'not used')}</span><span class="gp2-id">#${p.index} · ${gpaName(p).replace(/</g, '&lt;')}${same}</span><span class="gp2-last">${GPA.last[p.index] ? FRT('último: ', 'last: ') + GPA.last[p.index] : FRT('aperte um botão para testar', 'press a button to test')}</span></div>`;
+    }
+    if (list.dataset.h !== html) { list.innerHTML = html; list.dataset.h = html; }
+}
+(function () {
+    // o painel vai no cartão "Teclado e Controle", que também aparece no desenvolvimento completo
+    const kp = document.querySelector('.kbd-panel');
+    if (kp && !document.getElementById('gp2-panel')) kp.append(gpaPanelEl());
+    setInterval(() => { try { gpaRender(); } catch (e) {} }, 120);
+    // a linha de status mostra o número de cada controle
+    updateGamepadStatus = function (force) {
+        const L = i18n[currentLang];
+        const key = currentLang + '|' + physicalPads.map(p => p ? p.index + p.id : '-').join('|');
+        if (!force && key === gpStatusKey) return;
+        gpStatusKey = key;
+        const el = $('gp-status'); if (!el) return;
+        const t = n => physicalPads[n] ? `gamepad${n + 1} = #${physicalPads[n].index} ${gpaName(physicalPads[n])}` : '';
+        const txt = [t(0), t(1)].filter(Boolean).join(' · ');
+        if (!txt) { el.innerText = L.gpNone; el.classList.remove('on'); return; }
+        el.innerText = L.gpOn + ': ' + txt;
+        el.classList.add('on');
+    };
 })();
 </script>
 </body>
