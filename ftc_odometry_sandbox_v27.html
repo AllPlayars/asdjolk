@@ -19147,7 +19147,7 @@ function v3dBuild() {
                 FRT('Intake com o midtake parado', 'Intake with the midtake stopped') + ': ',
                 h('select', { class: 'v3d-pre v3d-i4', onchange: e => { BBG.opts.intake4 = e.target.value === '4'; BBG.save(); } },
                     h('option', { value: '4', text: FRT('empurra a fila (4 peças)', 'pushes the queue (4 pieces)') }),
-                    h('option', { value: '2', text: FRT('só 2 peças (como antes)', 'only 2 pieces (as before)') }))),
+                    h('option', { value: '2', text: FRT('só 2 peças', 'only 2 pieces') }))),
             h('button', { class: 'btn small v3d-example', text: v3t('example'), onclick: () => bbLoadExample() })));
     const arenaCol = h('div', { class: 'v3d-cfgc v3d-cfg-arena' },
         h('div', { class: 'v3d-sec', text: '🏟 ' + FRT('Arena', 'Arena') }),
