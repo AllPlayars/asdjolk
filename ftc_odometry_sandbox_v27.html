@@ -2413,6 +2413,11 @@ body.ui-no-v3d .v3d { display: block; }
 .st-pre-info { font-size: 11px; }
 .pre-path polyline { fill: none; stroke-width: 3; stroke-dasharray: 7 5; opacity: .75; }
 .pre-path polyline.red { stroke: #ff8a80; } .pre-path polyline.blue { stroke: #82b1ff; }
+/* v27.9: aviso do POLLINATOR */
+.mt-pop { display: inline-block; padding: 2px 8px; border-radius: 10px; font: 800 11px system-ui, sans-serif; color: #1a1a1a; background: #ffd54f; box-shadow: 0 0 0 2px rgba(0,0,0,.25); animation: mtPop 1s ease-in-out infinite alternate; white-space: nowrap; }
+.mt-pop.red { outline: 2px solid #e53935; } .mt-pop.blue { outline: 2px solid #1e63d6; }
+@keyframes mtPop { from { transform: scale(1); } to { transform: scale(1.08); } }
+@media (prefers-reduced-motion: reduce) { .mt-pop { animation: none; } }
     </style>
 </head>
 <body>
@@ -2422,7 +2427,7 @@ body.ui-no-v3d .v3d { display: block; }
             <div class="brand-icon">FTC</div>
             <div class="brand-text">
                 <h1>Odometry Sandbox</h1>
-                <p>v27.8 · Alpha · Pontuação do jogo · IA em 3 níveis · Equipes</p>
+                <p>v27.9 · Alpha · Pontuação do jogo · IA em 3 níveis · Equipes</p>
             </div>
         </div>
         <nav class="header-nav app-nav" aria-label="Navegação">
@@ -2664,7 +2669,7 @@ body.ui-no-v3d .v3d { display: block; }
         <div class="status-bar">
             <div class="status-dot" id="status-dot"></div>
             <div class="status-text" id="compile-status">✅ Compilado com sucesso e rodando (Aguardando)</div>
-            <div class="status-env" data-i18n="statusEnv">Sandbox v27.8 (Monaco IDE)</div>
+            <div class="status-env" data-i18n="statusEnv">Sandbox v27.9 (Monaco IDE)</div>
         </div>
     </div>
 
@@ -2961,7 +2966,7 @@ const i18nV17 = {
     ko:["키보드와 게임패드","🎮 컨트롤러(USB 또는 블루투스)를 연결하고 아무 버튼이나 누르세요.","🎮 컨트롤러 연결됨"],
     ar:["لوحة المفاتيح وذراع التحكم","🎮 وصّل ذراع تحكم (USB أو Bluetooth) واضغط أي زر.","🎮 ذراع التحكم متصل"]
 };
-const SANDBOX_VERSION = 'v27.8';
+const SANDBOX_VERSION = 'v27.9';
 for (const l in i18nExtra) {
     Object.assign(i18n[l], i18nExtra[l]);
     I18N_V16_KEYS.forEach((k, i) => { i18n[l][k] = i18nV16Rows[l][i]; });
@@ -21570,8 +21575,9 @@ const FLOWER_CAP = 8;
 
 /* ---------------- pontuação (Tabela 10-2) ---------------- */
 const SC_PTS = { leave: 3, park: 5, tip: 20, cell: 2, bonus: 5, flower: 2, garden: 1, minor: 5, major: 20 };
-const SC = { leave: null, autoPark: null, telePark: null, tipsA: { red: 0, blue: 0 }, tipsT: { red: 0, blue: 0 }, fouls: { red: [], blue: [] }, final: null };
-function scReset() { SC.leave = SC.autoPark = SC.telePark = SC.final = null; SC.tipsA = { red: 0, blue: 0 }; SC.tipsT = { red: 0, blue: 0 }; SC.fouls = { red: [], blue: [] }; }
+const SC = { pop: { red: null, blue: null }, leave: null, autoPark: null, telePark: null, tipsA: { red: 0, blue: 0 }, tipsT: { red: 0, blue: 0 }, fouls: { red: [], blue: [] }, final: null };
+const scPop = sd => { const q = SC.pop && SC.pop[sd]; return q && frClock() - q.t < 5 && frClock() >= q.t ? q.txt : null; };
+function scReset() { SC.pop = { red: null, blue: null }; SC.leave = SC.autoPark = SC.telePark = SC.final = null; SC.tipsA = { red: 0, blue: 0 }; SC.tipsT = { red: 0, blue: 0 }; SC.fouls = { red: [], blue: [] }; }
 function scFoul(by, kind, rule) { if (SC.fouls[by]) SC.fouls[by].push({ kind, rule, t: MATCH.T, ph: MATCH.phase }); }
 // os robôs da partida, cada um com a sua caixa de 18 × 18 pol.
 function scRobots() {
@@ -21613,8 +21619,12 @@ function scField() {
     }
     return f;
 }
+// v27.9: a CELL de cima, as FLOWERs, o bônus e as GARDENs só valem no fim da partida (seção 10.5, itens C, D e E):
+// durante a partida eles ficam fora do total, e o cartão mostra entre parênteses quanto valeriam se ela acabasse agora
+const SC_END = ['cell', 'flower', 'bonus', 'garden'];
 function scCalc() {
-    const F = SC.final || scField(), out = {};
+    const PV = scField(), Z = { cell: { red: 0, blue: 0 }, flower: { red: 0, blue: 0 }, bonus: { red: 0, blue: 0 }, garden: { red: 0, blue: 0 } };
+    const F = SC.final || Z, out = {};
     for (const sd of ['red', 'blue']) {
         const op = mtOther(sd), cnt = (arr, k) => arr ? arr.filter(x => x.side === sd && x.ok).length : 0;
         const p = {
@@ -21625,6 +21635,7 @@ function scCalc() {
         };
         p.total = Object.values(p).reduce((s, v) => s + v, 0);
         p.tips = SC.tipsA[sd] + SC.tipsT[sd];
+        p.prov = { cell: SC_PTS.cell * PV.cell[sd], bonus: SC_PTS.bonus * PV.bonus[sd], flower: SC_PTS.flower * PV.flower[sd], garden: SC_PTS.garden * PV.garden[sd] };
         out[sd] = p;
     }
     for (const sd of ['red', 'blue']) {
@@ -21643,12 +21654,13 @@ function scHtml() {
         ['garden', 'GARDEN', 1], ['telePark', 'PARK (TELEOP)', 5], ['foul', pt ? 'Faltas do adversário' : 'Opponent fouls', null]
     ];
     let s = `<table class="v27-score"><thead><tr><th></th><th class="red">${pt ? 'Vermelha' : 'Red'}</th><th class="blue">${pt ? 'Azul' : 'Blue'}</th></tr></thead><tbody>`;
-    for (const [k, name, v] of rows) s += `<tr><td>${name}${v ? ` <span class="muted">(${v})</span>` : ''}${live && ['cell', 'flower', 'bonus', 'garden'].includes(k) ? ' <span class="muted">*</span>' : ''}</td><td>${S.red[k]}</td><td>${S.blue[k]}</td></tr>`;
+    const cellTxt = (sd, k) => live && SC_END.includes(k) ? `— <span class="muted">(${S[sd].prov[k]})</span>` : (live && k === 'telePark' ? '—' : S[sd][k]);
+    for (const [k, name, v] of rows) s += `<tr><td>${name}${v ? ` <span class="muted">(${v})</span>` : ''}${live && SC_END.includes(k) ? ' <span class="muted">*</span>' : ''}</td><td>${cellTxt('red', k)}</td><td>${cellTxt('blue', k)}</td></tr>`;
     s += `<tr class="tot"><td>${pt ? 'Total' : 'Total'}</td><td>${S.red.total}</td><td>${S.blue.total}</td></tr>`;
     const rp = sd => { const r = S[sd].rp; return `${r.total} <span class="muted">(${[r.swarm ? 'SWARM' : '', r.pol1 ? 'POL1' : '', r.pol2 ? 'POL2' : '', SC.final ? (r.win === 3 ? 'WIN' : r.win === 1 ? 'TIE' : '') : ''].filter(Boolean).join(' ') || '—'})</span>`; };
     s += `<tr><td>RANKING POINTS</td><td>${rp('red')}</td><td>${rp('blue')}</td></tr></tbody></table>`;
     const notes = [];
-    if (live) notes.push(pt ? '* parcial: conta no fim da partida, com tudo parado' : '* partial: assessed at the end of the match, with everything at rest');
+    if (live) notes.push(pt ? '* só conta no fim da partida, com tudo parado (manual, 10.5); entre parênteses, quanto valeria se a partida acabasse agora' : '* only counts at the end of the match, with everything at rest (manual, 10.5); in parentheses, what it would be worth if the match ended now');
     for (const L of [SC.autoPark, SC.telePark]) if (L) for (const r of L) if (r.inZone && r.wall) notes.push(pt ? `${r.label}: na LOADING ZONE, mas encostado na parede — o PARK não conta` : `${r.label}: in the LOADING ZONE but touching the wall — PARK does not count`);
     for (const sd of ['red', 'blue']) for (const f of SC.fouls[sd]) notes.push(`${pt ? 'Falta' : 'Foul'} ${f.kind === 'major' ? 'MAJOR' : 'MINOR'} (${f.rule}) ${pt ? 'da aliança' : 'by'} ${pt ? (sd === 'red' ? 'vermelha' : 'azul') : sd}: +${f.kind === 'major' ? 20 : 5} ${pt ? 'para o adversário' : 'to the opponent'}`);
     if (notes.length) s += `<div class="muted v27-notes">${[...new Set(notes)].join('<br>')}</div>`;
@@ -21677,7 +21689,12 @@ function scHtml() {
         const r = wt.apply(this, arguments);
         for (const sd of ['red', 'blue']) {
             const d = MATCH.tips[sd] - t0[sd];
-            if (d > 0) { (MATCH.phase === 'auto' ? SC.tipsA : SC.tipsT)[sd] += d; if (HP[sd]) HP[sd].credits += d; }
+            if (d > 0) {
+                (MATCH.phase === 'auto' ? SC.tipsA : SC.tipsT)[sd] += d; if (HP[sd]) HP[sd].credits += d;
+                // v27.9: aviso de 5 s quando a aliança chega a 4 viradas (POLLINATOR 1 RP) ou a 7 (POLLINATOR 2 RP)
+                const tot = SC.tipsA[sd] + SC.tipsT[sd], prev = tot - d;
+                for (const [n, lbl] of [[4, 'POLLINATOR 1'], [7, 'POLLINATOR 2']]) if (prev < n && tot >= n) SC.pop[sd] = { txt: lbl, t: frClock() };
+            }
         }
         return r;
     };
@@ -21712,7 +21729,8 @@ function v27BoardHtml() {
     const S = scCalc(), ph = MATCH.phase, dur = ph === 'auto' ? MT.auto : MT.tele, live = mtLive();
     const u = sd => Math.round(Math.min(1, bbTipUnits(sd)) * 100);
     const clock = live ? (ph === 'auto' ? 'AUTO ' : (dur - MATCH.T <= MT.endgame ? '⏱ ' : '') + 'TELEOP ') + mtClockTxt(dur - MATCH.T) : mtt2('ph', ph);
-    return `<span class="mt-b red"><b>${S.red.total}</b> · ${MATCH.tips.red}⟲ ${u('red')}%</span><span class="mt-b mid">${clock}</span><span class="mt-b blue">${u('blue')}% ${MATCH.tips.blue}⟲ · <b>${S.blue.total}</b></span>`;
+    const pop = sd => scPop(sd) ? `<span class="mt-pop ${sd}">🐝 ${scPop(sd)}</span>` : '';
+    return `<span class="mt-b red"><b>${S.red.total}</b> · ${MATCH.tips.red}⟲ ${u('red')}%</span>${pop('red')}<span class="mt-b mid">${clock}</span><span class="mt-b blue">${u('blue')}% ${MATCH.tips.blue}⟲ · <b>${S.blue.total}</b></span>${pop('blue')}`;
 }
 // a cor da aliança também muda fora da partida (ao trocar a posição inicial ou o campo)
 (function () {
@@ -22281,14 +22299,17 @@ function v3dBoard(R) {
     const S = scCalc(), ph = MATCH.phase, dur = ph === 'auto' ? MT.auto : MT.tele, live = mtLive(), left = dur - MATCH.T;
     const u = sd => Math.round(Math.min(1, bbTipUnits(sd)) * 100);
     const clock = live ? (ph === 'auto' ? 'AUTO ' : 'TELEOP ') + mtClockTxt(left) : mtt2('ph', ph);
+    const popP = sd => scPop(sd) ? [{ t: '🐝 ' + scPop(sd), sub: FRT('ranking point', 'ranking point'), bg: 'rgba(255,213,79,.95)', fg: '#1a1a1a', pop: true }] : [];
     const parts = [
         { t: `${S.red.total}`, sub: `${MATCH.tips.red}⟲ · ${u('red')}%`, bg: 'rgba(211,47,47,.92)', fg: '#fff' },
+        ...popP('red'),
         { t: clock, sub: live && ph === 'teleop' && left <= MT.endgame ? FRT('fim de jogo', 'endgame') : (SC.final ? FRT('final', 'final') : ''), bg: 'rgba(20,22,26,.88)', fg: live && ph === 'teleop' && left <= 10 ? '#ff5252' : live && ph === 'teleop' && left <= MT.endgame ? '#ffd54f' : '#fff', mid: true },
-        { t: `${S.blue.total}`, sub: `${u('blue')}% · ${MATCH.tips.blue}⟲`, bg: 'rgba(30,99,214,.92)', fg: '#fff' }
+        { t: `${S.blue.total}`, sub: `${u('blue')}% · ${MATCH.tips.blue}⟲`, bg: 'rgba(30,99,214,.92)', fg: '#fff' },
+        ...popP('blue')
     ];
     g.save();
     g.textAlign = 'center'; g.textBaseline = 'alphabetic';
-    const big = p => (p.mid ? (live ? 18 : 12) : 20) * k, small = 10 * k, padX = 10 * k, hgt = 42 * k, gap = 4 * k, y0 = 8 * k;
+    const big = p => (p.mid ? (live ? 18 : 12) : p.pop ? 13 : 20) * k, small = 10 * k, padX = 10 * k, hgt = 42 * k, gap = 4 * k, y0 = 8 * k;
     const w = parts.map(p => { g.font = `700 ${big(p)}px Inter, system-ui, sans-serif`; const a = g.measureText(p.t).width; g.font = `600 ${small}px Inter, system-ui, sans-serif`; return Math.max(a, g.measureText(p.sub).width, (p.mid ? 96 : 54) * k) + 2 * padX; });
     let x = R.W / 2 - (w.reduce((a, b) => a + b, 0) + gap * 2) / 2;
     parts.forEach((p, i) => {
@@ -22298,7 +22319,7 @@ function v3dBoard(R) {
         g.fill();
         g.fillStyle = p.fg; g.font = `700 ${big(p)}px Inter, system-ui, sans-serif`;
         g.fillText(p.t, x + w[i] / 2, y0 + (p.sub ? 24 : 28) * k);
-        if (p.sub) { g.fillStyle = 'rgba(255,255,255,.85)'; g.font = `600 ${small}px Inter, system-ui, sans-serif`; g.fillText(p.sub, x + w[i] / 2, y0 + 37 * k); }
+        if (p.sub) { g.fillStyle = p.pop ? 'rgba(0,0,0,.7)' : 'rgba(255,255,255,.85)'; g.font = `600 ${small}px Inter, system-ui, sans-serif`; g.fillText(p.sub, x + w[i] / 2, y0 + 37 * k); }
         x += w[i] + gap;
     });
     g.restore();
