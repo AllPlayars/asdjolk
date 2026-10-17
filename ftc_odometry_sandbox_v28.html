@@ -2444,7 +2444,7 @@ body.ui-no-v3d .v3d { display: block; }
             <div class="brand-icon">FTC</div>
             <div class="brand-text">
                 <h1>Odometry Sandbox</h1>
-                <p>v28.0 · Alpha · Intake pendurado · Retirada do POLLEN</p>
+                <p>v28.1 · Alpha · Intake pendurado · Retirada do POLLEN</p>
             </div>
         </div>
         <nav class="header-nav app-nav" aria-label="Navegação">
@@ -2686,7 +2686,7 @@ body.ui-no-v3d .v3d { display: block; }
         <div class="status-bar">
             <div class="status-dot" id="status-dot"></div>
             <div class="status-text" id="compile-status">✅ Compilado com sucesso e rodando (Aguardando)</div>
-            <div class="status-env" data-i18n="statusEnv">Sandbox v28.0 (Monaco IDE)</div>
+            <div class="status-env" data-i18n="statusEnv">Sandbox v28.1 (Monaco IDE)</div>
         </div>
     </div>
 
@@ -2983,7 +2983,7 @@ const i18nV17 = {
     ko:["키보드와 게임패드","🎮 컨트롤러(USB 또는 블루투스)를 연결하고 아무 버튼이나 누르세요.","🎮 컨트롤러 연결됨"],
     ar:["لوحة المفاتيح وذراع التحكم","🎮 وصّل ذراع تحكم (USB أو Bluetooth) واضغط أي زر.","🎮 ذراع التحكم متصل"]
 };
-const SANDBOX_VERSION = 'v28.0';
+const SANDBOX_VERSION = 'v28.1';
 for (const l in i18nExtra) {
     Object.assign(i18n[l], i18nExtra[l]);
     I18N_V16_KEYS.forEach((k, i) => { i18n[l][k] = i18nV16Rows[l][i]; });
@@ -23306,6 +23306,45 @@ function bbPickRow(port) {
         if (u.pick === 'brush') { c.exServos[1] = { port: 1, type: 'none', name: '' }; c.exServos[2] = { port: 2, type: 'crservo', name: 'brush' }; }
         return c;
     };
+})();
+
+/* =====================================================================
+   v28.1: POSE DO PINPOINT NA TELA (fantasma, vista 3D e tabela de erro)
+   As leituras do Pinpoint estavam certas, mas a tela supunha que as
+   coordenadas dele começavam onde resetPosAndIMU() foi chamado. Com
+   setPosition (por exemplo, a posição inicial em coordenadas do campo),
+   o fantasma aparecia longe do robô (55 a 66 pol. nos testes). Agora, na
+   primeira vez que o programa define a posição depois de ligar ou de
+   resetPosAndIMU, a tela descobre em que referencial ele está: se a pose
+   dada é a do robô no campo (até 6 pol. e 10°), usa o referencial do campo
+   (o erro inicial aparece); senão, alinha o referencial do programa com a
+   pose real do robô naquele momento. As correções seguintes (por exemplo,
+   com a Limelight) não mexem mais no referencial: o erro delas aparece.
+   ===================================================================== */
+function frPPAlignFrame() {
+    const P = FR_PP; if (!P) return;
+    P.alignPending = false;
+    if (P.frameSet) return;
+    P.frameSet = true;
+    const W = frWorld.pose(), xin = P.x / 25.4, yin = P.y / 25.4, hdeg = P.hc * 180 / Math.PI;
+    if (Math.hypot(xin - W.x, yin - W.y) < 6 && Math.abs(normDeg180(hdeg - W.h)) < 10) { P.ref = { x: 0, y: 0, h: 0 }; P.frame = 'field'; return; }
+    const Rh = W.h - hdeg, a = Rh * Math.PI / 180;
+    P.ref = { x: W.x - (xin * Math.cos(a) - yin * Math.sin(a)), y: W.y - (xin * Math.sin(a) + yin * Math.cos(a)), h: Rh };
+    P.frame = 'program';
+}
+(function () {
+    const pr = FrPinpoint.prototype;
+    // os setters marcam o alinhamento para o próximo passo (setPosX e setPosY costumam vir juntos)
+    for (const k of ['setPosition', 'setPosX', 'setPosY', 'setHeading']) {
+        const f = pr[k];
+        pr[k] = function () { const r = f.apply(this, arguments); if (FR_PP) FR_PP.alignPending = true; return r; };
+    }
+    const rs = pr.resetPosAndIMU;
+    pr.resetPosAndIMU = function () { const r = rs.apply(this, arguments); FR_PP.frameSet = false; FR_PP.alignPending = false; FR_PP.frame = 'reset'; return r; };
+    const tick = frPPTick;
+    frPPTick = function () { const r = tick.apply(this, arguments); if (FR_PP && FR_PP.alignPending) frPPAlignFrame(); return r; };
+    const wf = frWorldFromPinpoint;
+    frWorldFromPinpoint = function () { if (FR_PP && FR_PP.alignPending) frPPAlignFrame(); return wf.apply(this, arguments); };
 })();
 </script>
 </body>
