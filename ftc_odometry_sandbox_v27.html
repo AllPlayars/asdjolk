@@ -2404,7 +2404,7 @@ body.ui-no-v3d .v3d { display: block; }
             <div class="brand-icon">FTC</div>
             <div class="brand-text">
                 <h1>Odometry Sandbox</h1>
-                <p>v27.3 · Alpha · Pontuação do jogo · IA em 3 níveis · Equipes</p>
+                <p>v27.4 · Alpha · Pontuação do jogo · IA em 3 níveis · Equipes</p>
             </div>
         </div>
         <nav class="header-nav app-nav" aria-label="Navegação">
@@ -2646,7 +2646,7 @@ body.ui-no-v3d .v3d { display: block; }
         <div class="status-bar">
             <div class="status-dot" id="status-dot"></div>
             <div class="status-text" id="compile-status">✅ Compilado com sucesso e rodando (Aguardando)</div>
-            <div class="status-env" data-i18n="statusEnv">Sandbox v27.3 (Monaco IDE)</div>
+            <div class="status-env" data-i18n="statusEnv">Sandbox v27.4 (Monaco IDE)</div>
         </div>
     </div>
 
@@ -2943,7 +2943,7 @@ const i18nV17 = {
     ko:["키보드와 게임패드","🎮 컨트롤러(USB 또는 블루투스)를 연결하고 아무 버튼이나 누르세요.","🎮 컨트롤러 연결됨"],
     ar:["لوحة المفاتيح وذراع التحكم","🎮 وصّل ذراع تحكم (USB أو Bluetooth) واضغط أي زر.","🎮 ذراع التحكم متصل"]
 };
-const SANDBOX_VERSION = 'v27.3';
+const SANDBOX_VERSION = 'v27.4';
 for (const l in i18nExtra) {
     Object.assign(i18n[l], i18nExtra[l]);
     I18N_V16_KEYS.forEach((k, i) => { i18n[l][k] = i18nV16Rows[l][i]; });
@@ -18450,7 +18450,8 @@ const V3_COL = {
     alu: [176, 182, 190], aluDk: [128, 134, 142], plate: [58, 62, 70], wheel: [28, 28, 30], hub: [150, 152, 158], motor: [201, 162, 58],
     hub2: [38, 38, 42], orange: [255, 122, 0], battery: [30, 30, 32], green: [64, 160, 84],
     intake: [255, 143, 0], intakeDk: [214, 104, 0], mid: [38, 166, 154], midDk: [34, 34, 36],
-    shooter: [149, 117, 205], shooterDk: [94, 53, 177], fly: [32, 32, 34], arm: [236, 64, 122], armDk: [173, 20, 87], cam: [18, 18, 20]
+    shooter: [149, 117, 205], shooterDk: [94, 53, 177], fly: [32, 32, 34], arm: [236, 64, 122], armDk: [173, 20, 87], cam: [18, 18, 20],
+    hoodMov: [200, 120, 255]   // v27.4: trecho móvel do capô (antes escrito direto no desenho; agora as equipes trocam a cor dele)
 };
 // prisma de n lados ao longo de um eixo (rolos, volante, anel da torreta)
 function v3dPrism(c, axis, r, len, n, rot) {
@@ -18658,10 +18659,10 @@ function v3dRobotParts(M, mount, stype, chassis) {
             // capô móvel: a parte fixa vai até 170°; o trecho curvo de fora gira em volta do eixo do volante, levado pelo servo
             arc(g.S.hoodR + 0.1, g.S.phiIn + 1, 170, 5, C.shooterDk);
             const p0 = g.phiOut, p1 = g.phiOut + 40;
-            arc(g.S.hoodR + 0.35, p0, p1, 5, [200, 120, 255], 5.9);
+            arc(g.S.hoodR + 0.35, p0, p1, 5, C.hoodMov, 5.9);
             for (const sgn of [-1, 1]) {                                                           // braços que ligam o trecho móvel ao eixo
                 const pm = (p0 + 20) * rad, r = g.S.hoodR + 0.35;
-                add(v3dSlab(L(W.a, sgn * 2.85, W.z), L(W.a + r * Math.cos(pm), sgn * 2.85, W.z + r * Math.sin(pm)), Ly, 0.25, 0.35), [200, 120, 255], 'shooter');
+                add(v3dSlab(L(W.a, sgn * 2.85, W.z), L(W.a + r * Math.cos(pm), sgn * 2.85, W.z + r * Math.sin(pm)), Ly, 0.25, 0.35), C.hoodMov, 'shooter');
             }
             const sv = { a: W.a - 1.2, z: W.z - 2.3 };
             add(v3dLBox(v3(0, 0, 0), v3(1.6, 0.9, 0.8)).map(f => f.map(q => L(sv.a + q.x, -3.25 + q.y, sv.z + q.z))), C.cam, 'shooter');   // servo do capô
@@ -21907,7 +21908,10 @@ function tmRecolor(parts, key) {
     const C = V3_COL, m = new Map([
         [C.alu, T.c[0]], [C.aluDk, T.c[2]], [C.plate, T.top],
         [C.intake, T.c[1]], [C.mid, T.c[1]], [C.shooter, T.c[1]], [C.arm, T.c[1]],
-        [C.intakeDk, tmDark(T.c[1], 0.72)], [C.shooterDk, tmDark(T.c[1], 0.72)], [C.armDk, tmDark(T.c[1], 0.72)]
+        [C.intakeDk, tmDark(T.c[1], 0.72)], [C.armDk, tmDark(T.c[1], 0.72)],
+        // v27.4: o capô (fixo e o trecho móvel) é peça do mecanismo: fica na cor dos mecanismos da equipe, e o trecho
+        // móvel um pouco mais claro, para se ver onde ele começa
+        [C.shooterDk, T.c[1]], [C.hoodMov, T.c[1].map(v => Math.round(v + (255 - v) * 0.3))]
     ]);
     return parts.map(p => m.has(p.color) ? Object.assign({}, p, { color: m.get(p.color) }) : p);
 }
