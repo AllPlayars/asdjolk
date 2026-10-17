@@ -2422,6 +2422,10 @@ body.ui-no-v3d .v3d { display: block; }
 .mt-pop.foul { animation: none; color: #fff; background: #37474f; }
 .mt-pop.foul.minor { background: #ef6c00; } .mt-pop.foul.major, .mt-pop.foul.red { background: #b71c1c; } .mt-pop.foul.yellow { background: #ffd600; color: #1a1a1a; }
 #hp-btn.hp-foul { border-color: #ef6c00; color: #ef6c00; }
+/* v27.11: gráfico do PIDF */
+.pidg { margin-top: 12px; display: flex; flex-direction: column; gap: 6px; }
+.pidg[hidden] { display: none; }
+#pidg-cv { width: 100%; height: auto; border: 1px solid var(--border, #444); border-radius: 8px; background: var(--surf-2, transparent); }
     </style>
 </head>
 <body>
@@ -2431,7 +2435,7 @@ body.ui-no-v3d .v3d { display: block; }
             <div class="brand-icon">FTC</div>
             <div class="brand-text">
                 <h1>Odometry Sandbox</h1>
-                <p>v27.10 · Alpha · Pontuação do jogo · IA em 3 níveis · Equipes</p>
+                <p>v27.11 · Alpha · Pontuação do jogo · IA em 3 níveis · Equipes</p>
             </div>
         </div>
         <nav class="header-nav app-nav" aria-label="Navegação">
@@ -2673,7 +2677,7 @@ body.ui-no-v3d .v3d { display: block; }
         <div class="status-bar">
             <div class="status-dot" id="status-dot"></div>
             <div class="status-text" id="compile-status">✅ Compilado com sucesso e rodando (Aguardando)</div>
-            <div class="status-env" data-i18n="statusEnv">Sandbox v27.10 (Monaco IDE)</div>
+            <div class="status-env" data-i18n="statusEnv">Sandbox v27.11 (Monaco IDE)</div>
         </div>
     </div>
 
@@ -2970,7 +2974,7 @@ const i18nV17 = {
     ko:["키보드와 게임패드","🎮 컨트롤러(USB 또는 블루투스)를 연결하고 아무 버튼이나 누르세요.","🎮 컨트롤러 연결됨"],
     ar:["لوحة المفاتيح وذراع التحكم","🎮 وصّل ذراع تحكم (USB أو Bluetooth) واضغط أي زر.","🎮 ذراع التحكم متصل"]
 };
-const SANDBOX_VERSION = 'v27.10';
+const SANDBOX_VERSION = 'v27.11';
 for (const l in i18nExtra) {
     Object.assign(i18n[l], i18nExtra[l]);
     I18N_V16_KEYS.forEach((k, i) => { i18n[l][k] = i18nV16Rows[l][i]; });
@@ -10199,6 +10203,7 @@ const FR_SDK = {
     LinearOpMode: 'com.qualcomm.robotcore.eventloop.opmode', OpMode: 'com.qualcomm.robotcore.eventloop.opmode',
     TeleOp: 'com.qualcomm.robotcore.eventloop.opmode', Autonomous: 'com.qualcomm.robotcore.eventloop.opmode', Disabled: 'com.qualcomm.robotcore.eventloop.opmode',
     DcMotor: 'com.qualcomm.robotcore.hardware', DcMotorEx: 'com.qualcomm.robotcore.hardware', DcMotorSimple: 'com.qualcomm.robotcore.hardware',
+    PIDFCoefficients: 'com.qualcomm.robotcore.hardware', PIDCoefficients: 'com.qualcomm.robotcore.hardware', MotorControlAlgorithm: 'com.qualcomm.robotcore.hardware',
     Servo: 'com.qualcomm.robotcore.hardware', IMU: 'com.qualcomm.robotcore.hardware', HardwareMap: 'com.qualcomm.robotcore.hardware', Gamepad: 'com.qualcomm.robotcore.hardware',
     RevHubOrientationOnRobot: 'com.qualcomm.hardware.rev',
     AngleUnit: 'org.firstinspires.ftc.robotcore.external.navigation', DistanceUnit: 'org.firstinspires.ftc.robotcore.external.navigation',
@@ -11534,13 +11539,44 @@ const frSdkErr = (jn, msg) => new (frExc(jn))(msg);
 
 /* ---------------- dispositivos ---------------- */
 // Motor simulado: a posição do eixo vem do quanto a roda andou na física do Sandbox
+// v27.11: PIDFCoefficients e PIDCoefficients do SDK (com.qualcomm.robotcore.hardware)
+const FR_MCA = frEnum('MotorControlAlgorithm', ['LegacyPID', 'PIDF']);
+class FrPIDF {
+    constructor(p, i, d, f, alg) {
+        if (p instanceof FrPIDF) { const o = p; p = o.p; i = o.i; d = o.d; f = o.f; alg = o.algorithm; }
+        this.p = +(p || 0); this.i = +(i || 0); this.d = +(d || 0); this.f = +(f || 0); this.algorithm = alg || 'PIDF';
+    }
+    static check(vals, fn) { for (const v of vals) if (typeof v !== 'number' || !isFinite(v) || v < 0) throw frSdkErr('IllegalArgumentException', fn + ': ' + frMsg('os coeficientes precisam ser números maiores ou iguais a zero', 'the coefficients must be numbers greater than or equal to zero') + ' (' + v + ')'); }
+    toString() { const n = v => String(+v.toFixed(6)); return `PIDFCoefficients(p=${n(this.p)} i=${n(this.i)} d=${n(this.d)} f=${n(this.f)} alg=${this.algorithm})`; }
+}
+class FrPID { constructor(p, i, d) { this.p = +(p || 0); this.i = +(i || 0); this.d = +(d || 0); } toString() { return `PIDCoefficients(p=${this.p} i=${this.i} d=${this.d})`; } }
 class FrMotor {
     constructor(port, name, type) {
         this.port = port; this.name = name; this.type = type;
         this.dir = 'FORWARD'; this.mode = 'RUN_WITHOUT_ENCODER'; this.zpb = 'BRAKE';
         this.power = 0; this.target = 0; this.targetSet = false; this.offset = frWorld.shaftTicks(port); this.tol = 5; this.vel = null;
         this.enabled = true;
+        // v27.11: coeficientes do controle do Hub (os padrões do SDK para um motor no REV Hub): velocidade PIDF(10, 3, 0, 0)
+        // no RUN_USING_ENCODER e posição P = 5 no RUN_TO_POSITION
+        this.pidfV = new FrPIDF(10, 3, 0, 0); this.pidfP = new FrPIDF(5, 0, 0, 0);
     }
+    // v27.11: PIDF do SDK (DcMotorEx). Velocidade: os quatro números; posição: só o P
+    setVelocityPIDFCoefficients(p, i, d, f) { FrPIDF.check([p, i, d, f], 'setVelocityPIDFCoefficients'); this.pidfV = new FrPIDF(p, i, d, f); this.pidState = null; }
+    setPositionPIDFCoefficients(p) { FrPIDF.check([p], 'setPositionPIDFCoefficients'); this.pidfP = new FrPIDF(p, 0, 0, 0); }
+    setPIDFCoefficients(mode, c) {
+        if (!(c instanceof FrPIDF)) throw frSdkErr('IllegalArgumentException', 'setPIDFCoefficients(DcMotor.RunMode, new PIDFCoefficients(p, i, d, f))');
+        if (mode === 'RUN_USING_ENCODER') { this.pidfV = new FrPIDF(c); this.pidState = null; }
+        else if (mode === 'RUN_TO_POSITION') this.pidfP = new FrPIDF(c.p, 0, 0, 0);
+        else throw frSdkErr('IllegalArgumentException', 'setPIDFCoefficients: ' + frMsg('o modo precisa ser RUN_USING_ENCODER (velocidade) ou RUN_TO_POSITION (posição), e não ', 'the mode must be RUN_USING_ENCODER (velocity) or RUN_TO_POSITION (position), not ') + mode);
+    }
+    getPIDFCoefficients(mode) {
+        if (mode === 'RUN_USING_ENCODER') return new FrPIDF(this.pidfV);
+        if (mode === 'RUN_TO_POSITION') return new FrPIDF(this.pidfP);
+        throw frSdkErr('IllegalArgumentException', 'getPIDFCoefficients: ' + mode);
+    }
+    // os antigos (PIDCoefficients, sem o F): continuam no SDK, marcados como obsoletos
+    setPIDCoefficients(mode, c) { this.setPIDFCoefficients(mode, new FrPIDF(c.p, c.i, c.d, 0)); }
+    getPIDCoefficients(mode) { const c = this.getPIDFCoefficients(mode); return new FrPID(c.p, c.i, c.d); }
     get sgn() { return this.dir === 'REVERSE' ? -1 : 1; }
     setPower(p) { if (typeof p !== 'number' || Number.isNaN(p)) throw frSdkErr('IllegalArgumentException', 'setPower: ' + p); this.power = Math.max(-1, Math.min(1, p)); this.vel = null; FR_STATS.motorCmd = true; }
     getPower() { return this.mode === 'STOP_AND_RESET_ENCODER' ? 0 : this.power; }
@@ -11576,7 +11612,7 @@ class FrMotor {
         if (this.mode === 'RUN_TO_POSITION') {
             const err = this.target - this.getCurrentPosition();
             if (Math.abs(err) <= this.tol || this.power === 0) out = 0;
-            else out = Math.sign(err) * Math.min(Math.abs(this.power), Math.max(0.06, Math.abs(err) / 160));
+            else out = Math.sign(err) * Math.min(Math.abs(this.power), Math.max(0.06, Math.abs(err) * (this.pidfP.p / 5) / 160));   // v27.11: P de posição (padrão 5)
         }
         return out * this.sgn;
     }
@@ -11819,6 +11855,7 @@ const FR_SDK_RT = {
     LinearOpMode: {}, OpMode: {}, TeleOp: {}, Autonomous: {}, Disabled: {},
     DcMotor: { Direction: FR_DIR, RunMode: FR_RUNMODE, ZeroPowerBehavior: FR_ZPB }, DcMotorEx: { Direction: FR_DIR, RunMode: FR_RUNMODE, ZeroPowerBehavior: FR_ZPB }, DcMotorSimple: { Direction: FR_DIR },
     Servo: { Direction: FR_DIR, MIN_POSITION: 0, MAX_POSITION: 1 }, IMU: { Parameters: FrImuParams }, HardwareMap: {}, Gamepad: { RUMBLE_DURATION_CONTINUOUS: -1 },
+    PIDFCoefficients: FrPIDF, PIDCoefficients: FrPID, MotorControlAlgorithm: FR_MCA,
     RevHubOrientationOnRobot: FrHubOrientation, AngleUnit: FR_ANGLE, DistanceUnit: FR_DIST, YawPitchRollAngles: {}, AngularVelocity: {},
     WebcamName: {}, Telemetry: { DisplayFormat: FrTelemetry.DisplayFormat }, VisionPortal: FrVisionPortal,
     AprilTagProcessor: FrAprilTagProcessor, AprilTagDetection: {}, AprilTagGameDatabase: FR_ATGDB, AprilTagLibrary: {}, AprilTagMetadata: {}, AprilTagPoseFtc: {},
@@ -13054,7 +13091,11 @@ function frReferenceEl() {
             ['hardwareMap.get(DcMotor.class, "nome")', ''], ['setPower(-1..1)', ''], ['setDirection(DcMotorSimple.Direction.REVERSE)', ''],
             ['setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE | FLOAT)', ''], ['setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER | RUN_USING_ENCODER | RUN_WITHOUT_ENCODER | RUN_TO_POSITION)', ''],
             ['getCurrentPosition()', pt ? 'ticks do encoder (537,7 por volta)' : 'encoder ticks (537.7 per revolution)'], ['setTargetPosition(int)', pt ? 'antes de RUN_TO_POSITION' : 'before RUN_TO_POSITION'], ['isBusy()', ''],
-            ['setVelocity(ticksPorSeg) / getVelocity()', 'DcMotorEx']]),
+            ['setVelocity(ticksPorSeg) / getVelocity()', 'DcMotorEx'],
+            ['setVelocityPIDFCoefficients(p, i, d, f)', pt ? 'DcMotorEx: os ganhos do controle de velocidade do Hub (com RUN_USING_ENCODER e setVelocity). Padrão 10, 3, 0, 0. Potência = (P·erro + I·∫erro + D·Δerro + F·alvo) / 32767, com o erro em ticks/s: F ≈ 32767 / velocidade máxima' : 'DcMotorEx: the Hub velocity control gains (with RUN_USING_ENCODER and setVelocity). Default 10, 3, 0, 0. Power = (P·error + I·∫error + D·Δerror + F·target) / 32767, error in ticks/s: F ≈ 32767 / max velocity'],
+            ['setPIDFCoefficients(DcMotor.RunMode.RUN_USING_ENCODER, new PIDFCoefficients(p, i, d, f))', pt ? 'o mesmo, com um objeto PIDFCoefficients (import com.qualcomm.robotcore.hardware.PIDFCoefficients)' : 'the same, with a PIDFCoefficients object (import com.qualcomm.robotcore.hardware.PIDFCoefficients)'],
+            ['getPIDFCoefficients(DcMotor.RunMode.RUN_USING_ENCODER)', pt ? 'os coeficientes em uso: .p, .i, .d e .f' : 'the coefficients in use: .p, .i, .d and .f'],
+            ['setPositionPIDFCoefficients(p)', pt ? 'o ganho P do RUN_TO_POSITION (padrão 5)' : 'the RUN_TO_POSITION P gain (default 5)']]),
         sec('Servo', 'import com.qualcomm.robotcore.hardware.Servo;', [['hardwareMap.get(Servo.class, "nome")', ''], ['setPosition(0..1)', ''], ['getPosition()', ''], ['setDirection(Servo.Direction.REVERSE)', ''], ['scaleRange(min, max)', '']]),
         typeof FR_SWERVE !== 'undefined' ? sec('CRServo', 'import com.qualcomm.robotcore.hardware.CRServo;\nimport com.qualcomm.robotcore.hardware.DcMotorSimple;', [['hardwareMap.get(CRServo.class, "nome")', pt ? 'servo de rotação contínua (no Driver Hub: Continuous Rotation Servo)' : 'continuous rotation servo (on the Driver Hub: Continuous Rotation Servo)'], ['setPower(-1..1)', pt ? 'velocidade e sentido de giro' : 'speed and direction of rotation'], ['getPower()', ''], ['setDirection(DcMotorSimple.Direction.REVERSE)', '']]) : null,
         typeof FR_SWERVE !== 'undefined' ? sec('AnalogInput', 'import com.qualcomm.robotcore.hardware.AnalogInput;', [['hardwareMap.get(AnalogInput.class, "nome")', pt ? 'porta analógica (no Driver Hub: Analog Input)' : 'analog port (on the Driver Hub: Analog Input)'], ['getVoltage()', pt ? 'tensão de 0 a 3,3 V (no swerve: ângulo do módulo = tensão / 3,3 × 360°)' : 'voltage from 0 to 3.3 V (on the swerve: module angle = voltage / 3.3 × 360°)'], ['getMaxVoltage()', '3.3']]) : null,
@@ -13862,7 +13903,15 @@ const ACP = (() => {
     T('DcMotorEx', 'com.qualcomm.robotcore.hardware', 'DcMotor com velocidade e mais recursos.|DcMotor with velocity and more features.', motorM.concat([
         M('setVelocity(double angularRate)', 'void', 'Velocidade em ticks por segundo.|Velocity in ticks per second.'), M('getVelocity()', 'double', 'Ticks por segundo.|Ticks per second.'),
         M('setTargetPositionTolerance(int tolerance)', 'void', ''), M('getTargetPositionTolerance()', 'int', ''), M('setMotorEnable()', 'void', ''), M('setMotorDisable()', 'void', ''), M('isMotorEnabled()', 'boolean', ''),
+        M('setVelocityPIDFCoefficients(double p, double i, double d, double f)', 'void', 'Coeficientes do controle de velocidade do Hub (RUN_USING_ENCODER + setVelocity). Padrão: 10, 3, 0, 0. F ≈ 32767 / velocidade máxima em ticks/s (2800 no flywheel: F ≈ 11,7).|Hub velocity control coefficients (RUN_USING_ENCODER + setVelocity). Default: 10, 3, 0, 0. F ≈ 32767 / max velocity in ticks/s (2800 on the flywheel: F ≈ 11.7).'),
+        M('setPositionPIDFCoefficients(double p)', 'void', 'Ganho P do RUN_TO_POSITION (padrão 5).|RUN_TO_POSITION P gain (default 5).'),
+        M('setPIDFCoefficients(DcMotor.RunMode mode, PIDFCoefficients pidfCoefficients)', 'void', 'RUN_USING_ENCODER = velocidade; RUN_TO_POSITION = posição (só o P).|RUN_USING_ENCODER = velocity; RUN_TO_POSITION = position (P only).'),
+        M('getPIDFCoefficients(DcMotor.RunMode mode)', 'PIDFCoefficients', 'Os coeficientes em uso (p, i, d, f).|The coefficients in use (p, i, d, f).'),
         N('RunMode', ''), N('ZeroPowerBehavior', ''), N('Direction', '')]));
+    T('PIDFCoefficients', 'com.qualcomm.robotcore.hardware', 'new PIDFCoefficients(p, i, d, f): os quatro ganhos do controle do Hub.|new PIDFCoefficients(p, i, d, f): the four gains of the Hub control.', [
+        F('p', 'double', 'Proporcional: corrige o erro de agora.|Proportional: corrects the current error.'), F('i', 'double', 'Integral: tira o erro que sobra com o tempo.|Integral: removes the remaining error over time.'),
+        F('d', 'double', 'Derivativo: freia as mudanças rápidas do erro.|Derivative: damps fast changes in the error.'), F('f', 'double', 'Feedforward: potência proporcional ao alvo (F × alvo / 32767).|Feedforward: power proportional to the target (F × target / 32767).'),
+        F('algorithm', 'MotorControlAlgorithm', '')]);
     T('DcMotorSimple', 'com.qualcomm.robotcore.hardware', '', [N('Direction', '')]);
     E('DcMotor.RunMode', 'com.qualcomm.robotcore.hardware', '', ['RUN_WITHOUT_ENCODER', 'RUN_USING_ENCODER', 'RUN_TO_POSITION', 'STOP_AND_RESET_ENCODER']);
     E('DcMotor.ZeroPowerBehavior', 'com.qualcomm.robotcore.hardware', '', ['BRAKE', 'FLOAT', 'UNKNOWN']);
@@ -17315,13 +17364,13 @@ function bbReadCommands() {
             if (live) {
                 if (i) cmd.intake = i.output();
                 if (md) cmd.mid = md.output();
-                if (f) { if (f.vel !== null && f.vel !== undefined && f.mode !== 'RUN_WITHOUT_ENCODER') { cmd.flyVel = f.vel * f.sgn; } cmd.fly = f.output(); }
+                if (f) { if (f.vel !== null && f.vel !== undefined && f.mode !== 'RUN_WITHOUT_ENCODER') { cmd.flyVel = f.vel * f.sgn; } cmd.fly = f.output(); cmd.pidf = f.pidfV || null; }
                 // segundo motor do lançador (porta 2): montado espelhado, de frente para o primeiro — sem
                 // setDirection(REVERSE), a roda dele gira ao contrário. Com os pods instalados, o encoder da porta 2 é o do
                 // pod perpendicular: o setVelocity não "vê" a roda e manda força máxima, como no robô real.
                 if (f2) {
                     if (f2.vel !== null && f2.vel !== undefined && f2.mode !== 'RUN_WITHOUT_ENCODER') {
-                        if (typeof frHas !== 'undefined' && frHas.pods()) cmd.fly2 = -Math.sign(f2.vel * f2.sgn); else cmd.flyVel2 = -f2.vel * f2.sgn;
+                        if (typeof frHas !== 'undefined' && frHas.pods()) cmd.fly2 = -Math.sign(f2.vel * f2.sgn); else { cmd.flyVel2 = -f2.vel * f2.sgn; cmd.pidf2 = f2.pidfV || null; }
                     } else cmd.fly2 = -f2.output();
                 }
                 const cr = (hw.crservos ? hw.crservos() : []).find(s => s.port === 'E2');
@@ -17378,6 +17427,23 @@ function bbStep(dt) {
     bbPlaceStored();
     for (const b of BBG.balls) if (b.st === 'cell') b.p = bbCellPos(b);
 }
+// v27.11: o controle de velocidade do Hub (modelo aproximado): potência = (P·e + I·∫e + D·Δe + F·alvo) / 32767, com o erro e o
+// alvo em ticks/s; a integral e a derivada contam "por ciclo" de 50 ms (20 Hz). A potência fica entre −1 e 1, e a integral
+// para de crescer quando ela satura (anti-windup). A velocidade medida é a média dos últimos 50 ms. Com os padrões
+// (10, 3, 0, 0), o flywheel fica a menos de 5% do alvo em 1,1 s, passando 8% dele; com P = 30, I = 0,5 e F = 11,7
+// (≈ 32767 / 2800), em 0,35 s; só com P = 10, ele para em 829 de 1800 ticks/s; com P = 600, ele oscila.
+function bbPidfPower(M, key, k, targetTicks, w, dt) {
+    const S = M[key] || (M[key] = { integ: 0, prev: null, hist: [] });
+    // a velocidade que o Hub mede é a média dos últimos 50 ms do encoder: esse atraso é o que faz um P alto demais oscilar
+    S.hist.push(w / (2 * Math.PI) * BB_BOT.flyTicksRev); if (S.hist.length > 3) S.hist.shift();
+    const cur = S.hist.reduce((a, b) => a + b, 0) / S.hist.length, e = targetTicks - cur;
+    const integ = S.integ + e * dt * 20, de = S.prev === null ? 0 : (e - S.prev) / (dt * 20);
+    S.prev = e;
+    const raw = (k.p * e + k.i * integ + k.d * de + k.f * targetTicks) / 32767, u = Math.max(-1, Math.min(1, raw));
+    if (u === raw) S.integ = integ;
+    S.u = u; S.e = e;
+    return u;
+}
 function bbMechStep(dt, pose) {
     const M = BBG.mech, c = bbReadCommands();
     M.intake = c.intake; M.mid = c.mid; M.roller = c.roller;
@@ -17385,14 +17451,17 @@ function bbMechStep(dt, pose) {
     const W = BB_BOT.flyMaxRad;
     const Wb = W * (typeof batScale === 'function' ? batScale() : 1);   // v26: com a bateria real, o máximo acompanha a tensão
     let target = c.flyVel !== null ? Math.max(-Wb, Math.min(Wb, c.flyVel / BB_BOT.flyTicksRev * 2 * Math.PI)) : c.fly * Wb;
-    const tau = c.flyVel !== null ? 0.12 : 0.35;
     M.flyTarget = target; M.flyClosed = c.flyVel !== null;
-    M.flyW += (target - M.flyW) * Math.min(1, dt / tau);
+    // v27.11: com setVelocity, o Hub fecha a malha com os coeficientes PIDF do motor (setVelocityPIDFCoefficients) e manda
+    // uma potência para o motor; o flywheel responde a essa potência com a constante de tempo de 0,35 s (malha aberta)
+    if (c.flyVel !== null && c.pidf) M.flyW += (bbPidfPower(M, 'pid1', c.pidf, c.flyVel, M.flyW, dt) * Wb - M.flyW) * Math.min(1, dt / 0.35);
+    else { M.pid1 = null; M.flyW += (target - M.flyW) * Math.min(1, dt / (c.flyVel !== null ? 0.12 : 0.35)); }
     M.flyAng += M.flyW * dt;
     // segundo motor (porta 2), igual ao primeiro
     const target2 = c.flyVel2 !== null ? Math.max(-Wb, Math.min(Wb, c.flyVel2 / BB_BOT.flyTicksRev * 2 * Math.PI)) : c.fly2 * Wb;
     M.flyTarget2 = target2; M.flyClosed2 = c.flyVel2 !== null;
-    M.flyW2 += (target2 - M.flyW2) * Math.min(1, dt / (c.flyVel2 !== null ? 0.12 : 0.35));
+    if (c.flyVel2 !== null && c.pidf2) M.flyW2 += (bbPidfPower(M, 'pid2', c.pidf2, c.flyVel2, M.flyW2, dt) * Wb - M.flyW2) * Math.min(1, dt / 0.35);
+    else { M.pid2 = null; M.flyW2 += (target2 - M.flyW2) * Math.min(1, dt / (c.flyVel2 !== null ? 0.12 : 0.35)); }
     M.flyAng2 += M.flyW2 * dt;
     // capô móvel (servo): segue o comando a 70°/s
     if (c.hood !== null && c.hood !== undefined) M.hoodCmd = BB_BOT.hoodRange[0] + Math.max(0, Math.min(1, c.hood)) * (BB_BOT.hoodRange[1] - BB_BOT.hoodRange[0]);
@@ -18034,9 +18103,13 @@ ${two ? `        DcMotorEx shooter2 = hardwareMap.get(DcMotorEx.class, "shooter2
         CRServo armRoller = hardwareMap.get(CRServo.class, "armRoller");   // Expansion Hub, servo 2
 ${hoodS ? `        Servo hood = hardwareMap.get(Servo.class, "hood");                 // Expansion Hub, servo 3
 ` : ''}        shooter.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
+        // ${L('PIDF do controle de velocidade do Hub (padrão do SDK: 10, 3, 0, 0). F = 32767 / 2800 ≈ 11,7 dá a potência', 'Hub velocity control PIDF (SDK default: 10, 3, 0, 0). F = 32767 / 2800 ≈ 11.7 gives the power')}
+        // ${L('certa de saída; o P corrige o erro e o I tira o que sobra. Veja a resposta no gráfico das Ferramentas do Sandbox.', 'right away; P corrects the error and I removes what is left. See the response in the Sandbox tools chart.')}
+        shooter.setVelocityPIDFCoefficients(30, 0.5, 0, 11.7);
 ${two ? `        // ${L('o segundo motor está montado de frente para o primeiro: invertido, as duas rodas empurram a peça para fora', 'the second motor faces the first one: reversed, both wheels push the piece out')}
         shooter2.setDirection(DcMotorSimple.Direction.REVERSE);
         shooter2.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
+        shooter2.setVelocityPIDFCoefficients(30, 0.5, 0, 11.7);
 ` : ''}
         double alvo = VEL_INICIAL;
 ${tur ? `        double posTorreta = 0.5;
@@ -22532,6 +22605,61 @@ function penNotes() {
     if (SC.dq) out.push(pt ? '🟥 <b>Você foi desclassificado</b> (dois cartões amarelos = vermelho): numa partida de classificação, 0 pontos e 0 RANKING POINTS para você; o aliado fica com o placar da aliança.' : '🟥 <b>You were disqualified</b> (two yellow cards = red): in a qualification match, 0 points and 0 RANKING POINTS for you; your ally keeps the alliance score.');
     return out;
 }
+
+/* ---------------- v27.11: gráfico da velocidade do flywheel (PIDF) — Ferramentas do Sandbox ---------------- */
+// os últimos 5 s do flywheel: o alvo do setVelocity (tracejado), a velocidade medida e a potência que o Hub manda (0 a 1),
+// com os coeficientes PIDF em uso — para ajustar o P, o I, o D e o F vendo a resposta
+const PIDG = { log: [], t: 0 };
+(function () {
+    const ms = bbMechStep;
+    bbMechStep = function (dt) {
+        const r = ms.apply(this, arguments);
+        try {
+            const M = BBG.mech; PIDG.t += dt;
+            const tick = w => w / (2 * Math.PI) * BB_BOT.flyTicksRev;
+            PIDG.log.push({ t: PIDG.t, tgt: M.flyClosed ? tick(M.flyTarget) : null, cur: tick(M.flyW), u: M.pid1 ? M.pid1.u : null });
+            while (PIDG.log.length && PIDG.t - PIDG.log[0].t > 5) PIDG.log.shift();
+        } catch (e) {}
+        return r;
+    };
+})();
+function pidgEl() {
+    return h('div', { class: 'pidg', id: 'pidg' },
+        h('div', { class: 'fr-sb-h', text: FRT('Velocidade do flywheel (PIDF do motor 3)', 'Flywheel velocity (motor 3 PIDF)') }),
+        h('canvas', { id: 'pidg-cv', width: 640, height: 220 }),
+        h('div', { class: 'muted v27-help', id: 'pidg-info' }));
+}
+function pidgDraw() {
+    const cv = document.getElementById('pidg-cv'); if (!cv || !cv.isConnected || cv.offsetParent === null) return;
+    const g = cv.getContext('2d'), W = cv.width, H = cv.height, L = PIDG.log;
+    g.clearRect(0, 0, W, H);
+    const css = getComputedStyle(document.documentElement), fg = css.getPropertyValue('--text-muted').trim() || '#999';
+    const vmax = 3000, x = t => (t - (PIDG.t - 5)) / 5 * (W - 50) + 44, y = v => H - 18 - Math.max(0, Math.min(1, v / vmax)) * (H - 30);
+    g.font = '18px system-ui, sans-serif'; g.fillStyle = fg; g.strokeStyle = 'rgba(128,128,128,.35)'; g.lineWidth = 1;
+    for (const v of [0, 1000, 2000, 3000]) { g.beginPath(); g.moveTo(44, y(v)); g.lineTo(W - 6, y(v)); g.stroke(); g.fillText(String(v), 2, y(v) + 6); }
+    const line = (key, color, dash, scale) => {
+        g.strokeStyle = color; g.lineWidth = 3; g.setLineDash(dash || []); g.beginPath(); let on = false;
+        for (const q of L) { const v = q[key]; if (v === null || v === undefined) { on = false; continue; } const Y = y(scale ? v * scale : v); if (!on) { g.moveTo(x(q.t), Y); on = true; } else g.lineTo(x(q.t), Y); }
+        g.stroke(); g.setLineDash([]);
+    };
+    line('u', 'rgba(255,171,0,.8)', [2, 6], vmax);          // potência (0 a 1, na escala de 0 a 3000)
+    line('tgt', '#9e9e9e', [10, 8]);
+    line('cur', '#00b0ff');
+    const info = document.getElementById('pidg-info');
+    const R = typeof FR_RUN !== 'undefined' && FR_RUN && FR_RUN.hw ? FR_RUN.hw.motors().find(m => m.port === 'E3') : null, k = R && R.pidfV;
+    const last = L[L.length - 1], pt = appLang() === 'pt', n = v => (+v.toFixed(3)).toString().replace('.', pt ? ',' : '.');
+    const t = (k ? `PIDF ${pt ? 'em uso' : 'in use'}: p ${n(k.p)} · i ${n(k.i)} · d ${n(k.d)} · f ${n(k.f)}` : FRT('Rode um OpMode com o shooter no motor 3 do Expansion Hub.', 'Run an OpMode with the shooter on Expansion Hub motor 3.'))
+        + (last ? ` · ${pt ? 'medida' : 'measured'} ${Math.round(last.cur)} ticks/s` + (last.tgt !== null ? ` · ${pt ? 'alvo' : 'target'} ${Math.round(last.tgt)}` : ` · setPower (${pt ? 'sem PIDF' : 'no PIDF'})`) + (last.u !== null ? ` · ${pt ? 'potência' : 'power'} ${n(last.u)}` : '') : '')
+        + FRT(' — azul: velocidade; cinza tracejado: alvo; laranja pontilhado: potência que o Hub manda (0 a 1).', ' — blue: velocity; dashed grey: target; dotted orange: power the Hub sends (0 to 1).');
+    if (info.textContent !== t) info.textContent = t;
+}
+setInterval(() => {
+    try {
+        if (!document.getElementById('pidg')) { const box = document.getElementById('fr-sb-motors'); if (box && typeof bbActive === 'function') box.after(pidgEl()); }
+        const el = document.getElementById('pidg'); if (el) el.hidden = !(typeof bbActive === 'function' && bbActive());
+        pidgDraw();
+    } catch (e) {}
+}, 100);
 </script>
 </body>
 </html>
