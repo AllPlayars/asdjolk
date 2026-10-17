@@ -2418,6 +2418,10 @@ body.ui-no-v3d .v3d { display: block; }
 .mt-pop.red { outline: 2px solid #e53935; } .mt-pop.blue { outline: 2px solid #1e63d6; }
 @keyframes mtPop { from { transform: scale(1); } to { transform: scale(1.08); } }
 @media (prefers-reduced-motion: reduce) { .mt-pop { animation: none; } }
+/* v27.10: penalidades */
+.mt-pop.foul { animation: none; color: #fff; background: #37474f; }
+.mt-pop.foul.minor { background: #ef6c00; } .mt-pop.foul.major, .mt-pop.foul.red { background: #b71c1c; } .mt-pop.foul.yellow { background: #ffd600; color: #1a1a1a; }
+#hp-btn.hp-foul { border-color: #ef6c00; color: #ef6c00; }
     </style>
 </head>
 <body>
@@ -2427,7 +2431,7 @@ body.ui-no-v3d .v3d { display: block; }
             <div class="brand-icon">FTC</div>
             <div class="brand-text">
                 <h1>Odometry Sandbox</h1>
-                <p>v27.9 · Alpha · Pontuação do jogo · IA em 3 níveis · Equipes</p>
+                <p>v27.10 · Alpha · Pontuação do jogo · IA em 3 níveis · Equipes</p>
             </div>
         </div>
         <nav class="header-nav app-nav" aria-label="Navegação">
@@ -2669,7 +2673,7 @@ body.ui-no-v3d .v3d { display: block; }
         <div class="status-bar">
             <div class="status-dot" id="status-dot"></div>
             <div class="status-text" id="compile-status">✅ Compilado com sucesso e rodando (Aguardando)</div>
-            <div class="status-env" data-i18n="statusEnv">Sandbox v27.9 (Monaco IDE)</div>
+            <div class="status-env" data-i18n="statusEnv">Sandbox v27.10 (Monaco IDE)</div>
         </div>
     </div>
 
@@ -2966,7 +2970,7 @@ const i18nV17 = {
     ko:["키보드와 게임패드","🎮 컨트롤러(USB 또는 블루투스)를 연결하고 아무 버튼이나 누르세요.","🎮 컨트롤러 연결됨"],
     ar:["لوحة المفاتيح وذراع التحكم","🎮 وصّل ذراع تحكم (USB أو Bluetooth) واضغط أي زر.","🎮 ذراع التحكم متصل"]
 };
-const SANDBOX_VERSION = 'v27.9';
+const SANDBOX_VERSION = 'v27.10';
 for (const l in i18nExtra) {
     Object.assign(i18n[l], i18nExtra[l]);
     I18N_V16_KEYS.forEach((k, i) => { i18n[l][k] = i18nV16Rows[l][i]; });
@@ -5632,7 +5636,7 @@ WIDGETS.derivative = (box) => {
 /* ---------------- 70/71 · energia e potência ---------------- */
 // WIDGETS.energy → widgets4.js (v20.1, com figura)
 
-/* ---------------- 72 · volante ---------------- */
+/* ---------------- 72 · flywheel ---------------- */
 // WIDGETS.flywheel → widgets4.js (v20.1, com figura)
 
 /* ---------------- 73/74 · quantidade de movimento e colisões ---------------- */
@@ -6121,7 +6125,7 @@ WIDGETS.energy = (box) => {
     wgLayout(box, Lx('Trabalho, energia e potência', 'Work, energy and power'), svg, [m, v, hgt, vs], out); upd();
 };
 
-/* ---------------- 72 · volante (roda e rpm antes/depois) ---------------- */
+/* ---------------- 72 · flywheel (roda e rpm antes/depois) ---------------- */
 WIDGETS.flywheel = (box) => {
     const out = h('div', { class: 'wg-out' });
     const svg = svgBox(360, 230);
@@ -6132,7 +6136,7 @@ WIDGETS.flywheel = (box) => {
         const w0 = rpm.value * 2 * Math.PI / 60, Iv = I.value / 1000, E0 = 0.5 * Iv * w0 ** 2, E1 = Math.max(0, E0 - E.value);
         const w1 = Math.sqrt(2 * E1 / Iv), r1 = w1 * 60 / (2 * Math.PI);
         svg.innerHTML = '';
-        // volante: espessura do aro cresce com I
+        // flywheel: espessura do aro cresce com I
         const cx = 80, cy = 110, R = 60, th = 4 + I.value * 2.2;
         svg.append(S('circle', { cx, cy, r: R - th / 2, fill: 'none', stroke: 'var(--accent)', 'stroke-width': th }), S('circle', { cx, cy, r: 6, class: 'f-surf' }));
         for (let i = 0; i < 4; i++) { const a = i * Math.PI / 2 + 0.3; svg.append(lineP(cx, cy, cx + (R - th) * Math.cos(a), cy + (R - th) * Math.sin(a), 'ax')); }
@@ -7705,7 +7709,7 @@ task(71, L => ({
     hint: L('t = Ep / P = m·g·h / P.', 't = Ep / P = m·g·h / P.')
 }));
 task(72, L => ({
-    q: L('Escreva `rpmAfterShot`: um volante de inércia I (kg·m²) a `rpm` dá `energy` J para a peça. Qual o rpm depois? (E = ½Iω²)', 'Write `rpmAfterShot`: a flywheel of inertia I (kg·m²) at `rpm` gives `energy` J to the game piece. What is the rpm afterwards? (E = ½Iω²)'),
+    q: L('Escreva `rpmAfterShot`: um flywheel de inércia I (kg·m²) a `rpm` dá `energy` J para a peça. Qual o rpm depois? (E = ½Iω²)', 'Write `rpmAfterShot`: a flywheel of inertia I (kg·m²) at `rpm` gives `energy` J to the game piece. What is the rpm afterwards? (E = ½Iω²)'),
     fn: 'rpmAfterShot', starter: starter(L, 'double rpmAfterShot(double I, double rpm, double energy)', 'rpm'),
     sol: 'double rpmAfterShot(double I, double rpm, double energy) {\n    double w = rpm * 2 * Math.PI / 60;\n    double e = Math.max(0, 0.5 * I * w * w - energy);\n    return Math.sqrt(2 * e / I) * 60 / (2 * Math.PI);\n}',
     tests: [[0.002, 2864.79, 10], [0.002, 4000, 8], [0.006, 4000, 8], [0.001, 1000, 50]],
@@ -8779,19 +8783,19 @@ rmLesson(71, 'P', null, L => ({
 }));
 
 rmLesson(72, 'P', null, L => ({
-    t: L('Energia de rotação e volantes', 'Rotational energy and flywheels'),
-    steps: [L('Momento de inércia I e energia de rotação ½Iω².', 'Moment of inertia I and rotational energy ½Iω².'), L('Quatro problemas sobre quanto um volante desacelera ao dar energia a uma peça.', 'Four problems on how much a flywheel slows down when giving energy to a game piece.'), L('Medir o rpm de um volante antes e depois de um lançamento e explicar a queda.', 'Measure a flywheel’s rpm before and after a shot and explain the drop.')],
-    learn: L('O que gira guarda **energia de rotação**: **E = ½·I·ω²**. O **momento de inércia I** diz quão difícil é mudar o giro — massa longe do eixo aumenta I.\n\nAo lançar, o volante dá energia à peça e **perde rpm**. Com I maior, a mesma energia tirada causa uma **queda menor**, e o próximo lançamento sai mais parecido.',
+    t: L('Energia de rotação e flywheels', 'Rotational energy and flywheels'),
+    steps: [L('Momento de inércia I e energia de rotação ½Iω².', 'Moment of inertia I and rotational energy ½Iω².'), L('Quatro problemas sobre quanto um flywheel desacelera ao dar energia a uma peça.', 'Four problems on how much a flywheel slows down when giving energy to a game piece.'), L('Medir o rpm de um flywheel antes e depois de um lançamento e explicar a queda.', 'Measure a flywheel’s rpm before and after a shot and explain the drop.')],
+    learn: L('O que gira guarda **energia de rotação**: **E = ½·I·ω²**. O **momento de inércia I** diz quão difícil é mudar o giro — massa longe do eixo aumenta I.\n\nAo lançar, o flywheel dá energia à peça e **perde rpm**. Com I maior, a mesma energia tirada causa uma **queda menor**, e o próximo lançamento sai mais parecido.',
         'What spins stores **rotational energy**: **E = ½·I·ω²**. The **moment of inertia I** says how hard it is to change the spin — mass far from the axis increases I.\n\nWhen shooting, the flywheel gives energy to the piece and **loses rpm**. With larger I, the same energy taken causes a **smaller drop**, and the next shot comes out more alike.'),
     eq: 'E = ½·I·ω²',
-    robot: L('Num lançador, o controle de velocidade (PID + kV) recupera o rpm entre lançamentos. Um volante mais pesado precisa de mais tempo para acelerar, mas oscila menos.', 'In a launcher, the velocity control (PID + kV) recovers the rpm between shots. A heavier flywheel needs more time to spin up, but fluctuates less.'),
+    robot: L('Num lançador, o controle de velocidade (PID + kV) recupera o rpm entre lançamentos. Um flywheel mais pesado precisa de mais tempo para acelerar, mas oscila menos.', 'In a launcher, the velocity control (PID + kV) recovers the rpm between shots. A heavier flywheel needs more time to spin up, but fluctuates less.'),
     widget: { id: 'flywheel' },
     puzzles: [
         { type: 'num', q: L('I = 0,002 kg·m² e ω = 300 rad/s. Energia guardada?', 'I = 0.002 kg·m² and ω = 300 rad/s. Stored energy?'), a: 90, tol: 0.01, unit: 'J', why: L('½ · 0,002 · 300² = 90 J.', '½ · 0.002 · 300² = 90 J.') },
-        { type: 'num', q: L('Esse volante dá 10 J para a peça. Novo ω (rad/s)?', 'That flywheel gives 10 J to the piece. New ω (rad/s)?'), a: 282.8, tol: 0.2, unit: 'rad/s', why: L('√(2 · 80 / 0,002) = √80000 = 282,8.', '√(2 · 80 / 0.002) = √80000 = 282.8.') },
+        { type: 'num', q: L('Esse flywheel dá 10 J para a peça. Novo ω (rad/s)?', 'That flywheel gives 10 J to the piece. New ω (rad/s)?'), a: 282.8, tol: 0.2, unit: 'rad/s', why: L('√(2 · 80 / 0,002) = √80000 = 282,8.', '√(2 · 80 / 0.002) = √80000 = 282.8.') },
         { type: 'mcq', q: L('Dobrando I, mesma energia tirada por lançamento, a queda de rpm:', 'Doubling I, same energy taken per shot, the rpm drop:'), opts: [L('fica menor', 'gets smaller'), L('fica maior', 'gets larger'), L('não muda', 'does not change'), L('vira zero', 'becomes zero')], a: 0, why: L('A mesma energia é uma fração menor do total.', 'The same energy is a smaller fraction of the total.') }
     ],
-    done: L('Explicar com ½Iω² por que um volante com mais inércia perde menos velocidade por lançamento.', 'Explain with ½Iω² why a flywheel with more inertia loses less speed per shot.')
+    done: L('Explicar com ½Iω² por que um flywheel com mais inércia perde menos velocidade por lançamento.', 'Explain with ½Iω² why a flywheel with more inertia loses less speed per shot.')
 }));
 
 rmLesson(73, 'P', null, L => ({
@@ -8831,7 +8835,7 @@ rmLesson(75, 'P', null, L => ({
     learn: L('Separe a velocidade de saída: **vx = v·cos θ** e **vy = v·sin θ**. Na horizontal nada muda; na vertical, a gravidade tira g = 10 m/s a cada segundo.\n\nSaindo do chão e voltando ao chão:\n**tempo de voo = 2·vy / g**\n**alcance = vx · tempo de voo**\n\n10 m/s a 45°: vx = vy = 7,07 m/s; tempo = 1,41 s; alcance = **10 m**.',
         'Split the exit velocity: **vx = v·cos θ** and **vy = v·sin θ**. Horizontally nothing changes; vertically, gravity removes g = 10 m/s every second.\n\nLeaving the ground and returning to the ground:\n**time of flight = 2·vy / g**\n**range = vx · time of flight**\n\n10 m/s at 45°: vx = vy = 7.07 m/s; time = 1.41 s; range = **10 m**.'),
     eq: 'x = vx·t      y = vy·t − ½·g·t²',
-    robot: L('Para acertar um alvo a uma distância x e altura y: com o ângulo fixo do lançador, ache o tempo t = x/vx e ajuste v até y(t) bater. Depois converta v em rpm do volante (encontro 30).', 'To hit a target at distance x and height y: with the launcher’s fixed angle, find the time t = x/vx and adjust v until y(t) matches. Then convert v into flywheel rpm (meeting 30).'),
+    robot: L('Para acertar um alvo a uma distância x e altura y: com o ângulo fixo do lançador, ache o tempo t = x/vx e ajuste v até y(t) bater. Depois converta v em rpm do flywheel (encontro 30).', 'To hit a target at distance x and height y: with the launcher’s fixed angle, find the time t = x/vx and adjust v until y(t) matches. Then convert v into flywheel rpm (meeting 30).'),
     widget: { id: 'projectile' },
     puzzles: [
         { type: 'num', q: L('Lançamento a **10 m/s** e **45°** a partir do chão (g = 10). Tempo de voo?', 'Shot at **10 m/s** and **45°** from the ground (g = 10). Time of flight?'), a: 1.414, tol: 0.005, unit: 's', why: L('2 · 7,071 / 10 = 1,414 s.', '2 · 7.071 / 10 = 1.414 s.') },
@@ -8843,11 +8847,11 @@ rmLesson(75, 'P', null, L => ({
 
 rmLesson(76, 'J', null, L => ({
     t: L('Projeto B: os números de um lançador', 'Project B: the numbers of a launcher'),
-    steps: [L('Planejar: a partir da altura e da distância do alvo, calcular a velocidade de saída (encontro 75).', 'Plan: from the target height and distance, compute the exit speed (meeting 75).'), L('Montar: transformar essa velocidade em rpm do volante com v = ω·r e colocar no código.', 'Build: turn that speed into flywheel rpm with v = ω·r and put it in the code.'), L('Testar: lançar dez vezes, anotar os acertos e comparar a queda de rpm com o encontro 72.', 'Test: shoot ten times, record the hits and compare the rpm drop with meeting 72.')],
-    learn: L('A cadeia de números do lançador:\n\n1. **alvo** (x, y) e ângulo fixo θ → velocidade de saída v (75)\n2. v = ω·r da roda → **rpm alvo** do volante (30), com uma folga porque a peça não sai com a velocidade toda da borda\n3. **controle de velocidade** (kV + PID) segurando esse rpm (34, 48)\n4. **teste**: dez lançamentos, taxa de acerto e queda de rpm (56, 72)',
+    steps: [L('Planejar: a partir da altura e da distância do alvo, calcular a velocidade de saída (encontro 75).', 'Plan: from the target height and distance, compute the exit speed (meeting 75).'), L('Montar: transformar essa velocidade em rpm do flywheel com v = ω·r e colocar no código.', 'Build: turn that speed into flywheel rpm with v = ω·r and put it in the code.'), L('Testar: lançar dez vezes, anotar os acertos e comparar a queda de rpm com o encontro 72.', 'Test: shoot ten times, record the hits and compare the rpm drop with meeting 72.')],
+    learn: L('A cadeia de números do lançador:\n\n1. **alvo** (x, y) e ângulo fixo θ → velocidade de saída v (75)\n2. v = ω·r da roda → **rpm alvo** do flywheel (30), com uma folga porque a peça não sai com a velocidade toda da borda\n3. **controle de velocidade** (kV + PID) segurando esse rpm (34, 48)\n4. **teste**: dez lançamentos, taxa de acerto e queda de rpm (56, 72)',
         'The launcher’s chain of numbers:\n\n1. **target** (x, y) and fixed angle θ → exit speed v (75)\n2. v = ω·r of the wheel → flywheel **target rpm** (30), with a margin because the piece does not leave with the full rim speed\n3. **velocity control** (kV + PID) holding that rpm (34, 48)\n4. **test**: ten shots, hit rate and rpm drop (56, 72)'),
     robot: L('A missão abaixo é o passo 1: ajuste velocidade e ângulo até acertar o alvo a 4 m de distância e 1,2 m de altura.', 'The mission below is step 1: adjust speed and angle until you hit the target 4 m away and 1.2 m high.'),
-    code: 'double v = 7.6;                        // m/s, do encontro 75\ndouble r = 0.048;                      // raio da roda do volante (m)\ndouble slip = 0.5;                     // a peça sai com ~metade da velocidade da borda\ndouble rpmAlvo = v / (r * slip) * 60 / (2 * Math.PI);\nflywheel.setVelocity(rpmAlvo / 60 * TICKS_PER_REV);   // ticks/s',
+    code: 'double v = 7.6;                        // m/s, do encontro 75\ndouble r = 0.048;                      // raio da roda do flywheel (m)\ndouble slip = 0.5;                     // a peça sai com ~metade da velocidade da borda\ndouble rpmAlvo = v / (r * slip) * 60 / (2 * Math.PI);\nflywheel.setVelocity(rpmAlvo / 60 * TICKS_PER_REV);   // ticks/s',
     widget: { id: 'projectile' },
     puzzles: [
         { type: 'goal', q: L('Missão: acerte o alvo amarelo (4 m, 1,2 m).', 'Mission: hit the yellow target (4 m, 1.2 m).'), widget: 'projectile', params: { goal: true, target: { x: 4, y: 1.2 } }, why: L('Uma solução: 7,6 m/s a 45°.', 'One solution: 7.6 m/s at 45°.') },
@@ -12208,6 +12212,7 @@ function frOnViewChange(name) {
         frViewOn = true;
         frArenaHome.drive = config.drive; frArenaHome.running = isSandboxRunning; frArenaHome.ghost = isGhostEnabled;
         if (isGhostEnabled) $('btn-ghost').click();   // no Robô Completo, o fantasma mostra o Pinpoint e a Limelight (começa desligado)
+        frArenaHome.trails = isTrailsEnabled; if (isTrailsEnabled) btnTrails.click();   // v27.10: começa com os rastros desligados
         if (config.drive !== FRS.drive) setDrive(FRS.drive);
         isSandboxRunning = true;
         arena.classList.add('fr-on');
@@ -12220,6 +12225,7 @@ function frOnViewChange(name) {
         if (frArenaHome.drive && config.drive !== frArenaHome.drive) setDrive(frArenaHome.drive);
         isSandboxRunning = frArenaHome.running; reflectToggleUI();
         if (frArenaHome.ghost && !isGhostEnabled) $('btn-ghost').click();
+        if (frArenaHome.trails && !isTrailsEnabled) btnTrails.click();                  // v27.10: volta como estava no pontual
         fitArena();
     }
 }
@@ -13081,8 +13087,8 @@ function frReferenceEl() {
         typeof BBG !== 'undefined' ? sec(FRT('Mecanismos BIOBUZZ (intake, midtake, shooter, braço)', 'BIOBUZZ mechanisms (intake, midtake, shooter, arm)'), 'import com.qualcomm.robotcore.hardware.DcMotorEx;\nimport com.qualcomm.robotcore.hardware.Servo;\nimport com.qualcomm.robotcore.hardware.CRServo;', [
             [pt ? 'Configuração' : 'Configuration', pt ? 'Expansion Hub 2 — motores 0 (intake), 1 (midtake), 3 (shooter) e 2 (shooter2, nos lançadores de duas rodas); servos 0 (torreta), 1 (braço), 2 (rolo do braço, Continuous Rotation Servo) e 3 (capô móvel). Veja a aba Robô' : 'Expansion Hub 2 — motors 0 (intake), 1 (midtake), 3 (shooter) and 2 (shooter2, on the two-wheel shooters); servos 0 (turret), 1 (arm), 2 (arm roller, Continuous Rotation Servo) and 3 (moving hood). See the Robot tab'],
             ['intake.setPower(1)', pt ? 'puxa as peças (POLLEN ou NECTAR) que encostam no rolo; até 3 no robô' : 'pulls in the pieces (POLLEN or NECTAR) touching the roller; up to 3 in the robot'],
-            ['midtake.setPower(1)', pt ? 'leva as peças até o lançador (no fim, sobem pelo furo da torreta); com o volante girando, a da frente é lançada' : 'carries the pieces to the shooter (at the end they rise through the turret hole); with the flywheel spinning, the front one is launched'],
-            ['shooter.setMode(DcMotor.RunMode.RUN_USING_ENCODER); shooter.setVelocity(1800)', pt ? 'volante em ticks/s (28 por volta, até 2800). Velocidade de saída = 320 pol/s × ticks/s ÷ 2800 (com dois motores, a média das duas rodas). O tipo de lançador é escolhido na vista 3D' : 'flywheel in ticks/s (28 per rev, up to 2800). Exit speed = 320 in/s × ticks/s ÷ 2800 (with two motors, the average of both wheels). The shooter type is chosen in the 3D view'],
+            ['midtake.setPower(1)', pt ? 'leva as peças até o lançador (no fim, sobem pelo furo da torreta); com o flywheel girando, a da frente é lançada' : 'carries the pieces to the shooter (at the end they rise through the turret hole); with the flywheel spinning, the front one is launched'],
+            ['shooter.setMode(DcMotor.RunMode.RUN_USING_ENCODER); shooter.setVelocity(1800)', pt ? 'flywheel em ticks/s (28 por volta, até 2800). Velocidade de saída = 320 pol/s × ticks/s ÷ 2800 (com dois motores, a média das duas rodas). O tipo de lançador é escolhido na vista 3D' : 'flywheel in ticks/s (28 per rev, up to 2800). Exit speed = 320 in/s × ticks/s ÷ 2800 (with two motors, the average of both wheels). The shooter type is chosen in the 3D view'],
             ['shooter2.setDirection(DcMotorSimple.Direction.REVERSE)', pt ? 'lançadores de duas rodas: o segundo motor (porta 2) fica de frente para o primeiro; sem REVERSE, as rodas brigam e a peça não sai' : 'two-wheel shooters: the second motor (port 2) faces the first one; without REVERSE the wheels fight and the piece does not leave'],
             ['hood.setPosition(0.857)', pt ? 'capô móvel (servo 3): 0 = saída a 40°, 1 = 75°; 0,857 = 70°' : 'moving hood (servo 3): 0 = exit at 40°, 1 = 75°; 0.857 = 70°'],
             ['shooter.getVelocity()', pt ? 'espere voltar ao alvo antes do próximo lançamento' : 'wait for it to return to the target before the next shot'],
@@ -13151,16 +13157,16 @@ function frBioRows() {
     const turret = BBG.opts.shooter === 'turret', st = bbStype(), two = bbTwoMotors();
     const where = turret ? FRT('na torreta', 'on the turret') : BBG.opts.shooter === 'back' ? FRT('fixo atrás, seguindo a rampa (sai a 60°)', 'fixed at the rear, following the ramp (leaves at 60°)') : FRT('fixo, apontando para a frente', 'fixed, pointing forward');
     const desc = {
-        hood: FRT('volante de 4 pol. com capô fixo: a peça sobe pelo furo, é apertada entre a roda e o capô curvo e sai pela ponta do capô a 70°', '4 in flywheel with a fixed hood: the piece rises through the hole, is squeezed between the wheel and the curved hood and leaves at the hood tip at 70°'),
-        hoodServo: FRT('volante de 4 pol. com capô móvel: um trecho curvo do capô gira em volta do eixo do volante (servo da porta 3) e muda a ponta do capô, e com ela o ângulo de saída, de 40° a 75°', '4 in flywheel with a moving hood: a curved section of the hood turns around the flywheel axle (servo on port 3) and moves the hood tip, and with it the exit angle, from 40° to 75°'),
-        double: FRT('dois volantes de 3 pol., um em cima e um embaixo da peça, cada um com o seu motor (portas 3 e 2); a peça sai reta entre eles a 70°', 'two 3 in flywheels, one above and one below the piece, each with its own motor (ports 3 and 2); the piece leaves straight between them at 70°'),
+        hood: FRT('flywheel de 4 pol. com capô fixo: a peça sobe pelo furo, é apertada entre a roda e o capô curvo e sai pela ponta do capô a 70°', '4 in flywheel with a fixed hood: the piece rises through the hole, is squeezed between the wheel and the curved hood and leaves at the hood tip at 70°'),
+        hoodServo: FRT('flywheel de 4 pol. com capô móvel: um trecho curvo do capô gira em volta do eixo do flywheel (servo da porta 3) e muda a ponta do capô, e com ela o ângulo de saída, de 40° a 75°', '4 in flywheel with a moving hood: a curved section of the hood turns around the flywheel axle (servo on port 3) and moves the hood tip, and with it the exit angle, from 40° to 75°'),
+        double: FRT('dois flywheels de 3 pol., um em cima e um embaixo da peça, cada um com o seu motor (portas 3 e 2); a peça sai reta entre eles a 70°', 'two 3 in flywheels, one above and one below the piece, each with its own motor (ports 3 and 2); the piece leaves straight between them at 70°'),
         disc: FRT('em linha, dois discos de 3 pol., um de cada lado da peça, cada um com o seu motor (portas 3 e 2); a peça passa reta, na direção em que vinha. É sempre fixo (na frente ou atrás), sem torreta', 'in-line, two 3 in discs, one on each side of the piece, each with its own motor (ports 3 and 2); the piece goes straight through, in the direction it was moving. Always fixed (front or rear), no turret'),
         top: FRT('em linha, uma roda de 4 pol. em cima, que aperta a peça contra uma placa; a peça passa reta, na direção em que vinha', 'in-line, one 4 in wheel on top that squeezes the piece against a plate; the piece goes straight through, in the direction it was moving')
     }[st];
     return [
         tr('EH Motor port 0', FRT('INTAKE: rolo laranja na frente. setPower(+1) puxa as peças para dentro; −1 cospe a que está na boca. Até 3 peças cabem no robô.', 'INTAKE: orange roller at the front. setPower(+1) pulls pieces in; −1 spits out the one at the mouth. Up to 3 pieces fit in the robot.')),
         tr('EH Motor port 1', BBG.opts.shooter === 'back' ? FRT('MIDTAKE: esteira em rampa que leva as peças do intake até as rodas do lançador, em linha reta no fim. setPower(+1) leva para o lançador (é ela que "atira"); −1 devolve.', 'MIDTAKE: ramp belt that carries the pieces from the intake to the shooter wheels, straight at the end. setPower(+1) carries them to the shooter (it is what "fires"); −1 brings them back.')
-            : FRT('MIDTAKE: esteira que leva as peças do intake até o lançador (no fim ela sobe na vertical, pelo furo da torreta). setPower(+1) leva para o lançador (é ela que "atira": a peça só sai quando a esteira a empurra no volante); −1 devolve.', 'MIDTAKE: belt that carries pieces from the intake to the shooter (at the end it rises vertically, through the turret hole). setPower(+1) carries them to the shooter (it is what "fires": a piece only leaves when the belt pushes it into the flywheel); −1 brings them back.')),
+            : FRT('MIDTAKE: esteira que leva as peças do intake até o lançador (no fim ela sobe na vertical, pelo furo da torreta). setPower(+1) leva para o lançador (é ela que "atira": a peça só sai quando a esteira a empurra no flywheel); −1 devolve.', 'MIDTAKE: belt that carries pieces from the intake to the shooter (at the end it rises vertically, through the turret hole). setPower(+1) carries them to the shooter (it is what "fires": a piece only leaves when the belt pushes it into the flywheel); −1 brings them back.')),
         two ? tr('EH Motor port 2', FRT('SHOOTER 2: o segundo motor do lançador (goBILDA 6000 rpm, 28 ticks por volta), montado de frente para o primeiro: use setDirection(REVERSE), senão a roda dele gira ao contrário e segura a peça. Com os pods de odometria instalados, o encoder desta porta é o do pod perpendicular: getVelocity lê o pod e setVelocity manda força máxima — use setPower neste motor.', 'SHOOTER 2: the second shooter motor (goBILDA 6000 rpm, 28 ticks per rev), mounted facing the first one: use setDirection(REVERSE), otherwise its wheel spins backwards and holds the piece. With the odometry pods installed, this port\'s encoder is the perpendicular pod: getVelocity reads the pod and setVelocity drives full power — use setPower on this motor.'))
             : tr('EH Motor port 2', FRT('(livre; com os pods instalados, o encoder desta porta é o do pod perpendicular)', '(free; with the pods installed, this port\'s encoder is the perpendicular pod)')),
         tr('EH Motor port 3', FRT(`SHOOTER (${where}): ${desc}. Motor goBILDA 6000 rpm (1:1), 28 ticks por volta (até 2800 ticks/s). A peça sai a 320 pol/s × (rpm / 6000)${two ? ', com a média das duas rodas' : ''} — o NECTAR, mais pesado, a ${two ? '92' : '88'}% disso. Cada lançamento derruba a rotação (${two ? '14% POLLEN, 20% NECTAR' : '18% POLLEN, 25% NECTAR'}); com setVelocity em RUN_USING_ENCODER ela volta mais rápido.`,
@@ -17016,7 +17022,7 @@ FR_LL_MAP = () => f3StartTags().filter(t => !t.signal);
      torque no pivô; quando o torque vence a trava, a HIVE vira;
    - o robô com intake (rolo na frente), midtake (esteira que leva as
      peças até o lançador, subindo na vertical pelo furo da torreta),
-     shooter (um volante com capô curvo, ou dois volantes sem capô;
+     shooter (um flywheel com capô curvo, ou dois flywheels sem capô;
      numa torreta de 270° ou fixo para a frente) e um braço que sai pela
      frente com um rolo na ponta, para tirar POLLEN da abertura de
      baixo das FLOWERs.
@@ -17045,13 +17051,13 @@ const BB_BOT = {
     hoodRange: [40, 75], hoodSpeed: 70,                        // capô móvel: servo de 40° a 75°, a 70°/s
     backAngle: 60,                                             // lançador em linha atrás: o ângulo da rampa no fim
     // Os lançadores, no plano do lançador (a = para onde ele aponta, z = altura). A peça entra em F.
-    // COM CAPÔ (fixo ou móvel): um volante de 4 pol. (r = 2) e um capô curvo de raio 4,6 em volta dele; a folga entre a
+    // COM CAPÔ (fixo ou móvel): um flywheel de 4 pol. (r = 2) e um capô curvo de raio 4,6 em volta dele; a folga entre a
     //   roda e o capô (2,6 pol.) é menor que a peça (POLLEN 2,8; NECTAR 3,6), então ela é apertada e rola entre os dois:
     //   o centro da peça anda num arco de raio 3,3 em volta do eixo, de 215° até a ponta do capô, e sai na direção da
     //   tangente (ponta − 90°). No capô fixo a ponta fica em 160° (70°); no móvel, um segundo trecho curvo gira em volta
-    //   do eixo do volante, levado por um servo, e põe a ponta entre 130° e 165° (40° a 75°). Rolando contra um capô
+    //   do eixo do flywheel, levado por um servo, e põe a ponta entre 130° e 165° (40° a 75°). Rolando contra um capô
     //   parado, a peça andaria à metade da velocidade da borda da roda; com a compressão e o escorregamento, η = 0,255.
-    // DOIS VOLANTES (sem capô): volantes de 3 pol. (r = 1,5) em cima e embaixo da peça, cada um com o seu motor; a peça
+    // DOIS FLYWHEELS (sem capô): flywheels de 3 pol. (r = 1,5) em cima e embaixo da peça, cada um com o seu motor; a peça
     //   sobe reta entre eles, na direção de 70°. Como as duas faces são empurradas, η = 0,34.
     // EM LINHA: a peça continua na direção em que vem e passa reta pelas rodas — dois discos de 3 pol., um de cada lado,
     //   cada um com o seu motor (η = 0,34), ou uma roda de 4 pol. em cima, que a aperta contra uma placa (η = 0,255).
@@ -17210,7 +17216,7 @@ function bbToRobot(pose, p) {
     const h = pose.h * Math.PI / 180, c = Math.cos(h), s = Math.sin(h), dx = p.x - pose.x, dy = p.y - pose.y;
     return v3(dx * c + dy * s, -dx * s + dy * c, p.z);
 }
-// ponto ao longo do caminho intake → volante (q de 0 a 1)
+// ponto ao longo do caminho intake → flywheel (q de 0 a 1)
 const bbFeedPath = () => BBG.opts.shooter === 'back' ? BB_BOT.pathBack : BB_BOT.path;
 function bbPathPoint(q) {
     const P = bbFeedPath(), n = P.length - 1, t = Math.max(0, Math.min(1, q)) * n, i = Math.min(n - 1, Math.floor(t)), f = t - i;
@@ -17375,7 +17381,7 @@ function bbStep(dt) {
 function bbMechStep(dt, pose) {
     const M = BBG.mech, c = bbReadCommands();
     M.intake = c.intake; M.mid = c.mid; M.roller = c.roller;
-    // volante: chega à velocidade pedida com uma constante de tempo (malha aberta 0,35 s; com setVelocity, 0,12 s)
+    // flywheel: chega à velocidade pedida com uma constante de tempo (malha aberta 0,35 s; com setVelocity, 0,12 s)
     const W = BB_BOT.flyMaxRad;
     const Wb = W * (typeof batScale === 'function' ? batScale() : 1);   // v26: com a bateria real, o máximo acompanha a tensão
     let target = c.flyVel !== null ? Math.max(-Wb, Math.min(Wb, c.flyVel / BB_BOT.flyTicksRev * 2 * Math.PI)) : c.fly * Wb;
@@ -17438,10 +17444,10 @@ function bbMechStep(dt, pose) {
             for (let i = n - 2; i >= 0; i--) st[i].q = Math.min(top, Math.max(st[i].q, st[i + 1].q + 0.3));
         }
     }
-    // peça dentro do lançador: anda pelo caminho (arco do capô, ou reta entre os dois volantes) e sai pela boca
+    // peça dentro do lançador: anda pelo caminho (arco do capô, ou reta entre os dois flywheels) e sai pela boca
     M.jam = false;
     if (M.shot) bbShotStep(dt, pose);
-    // peça no alto da subida com a esteira empurrando: entra no lançador (se o volante estiver girando para o lado certo)
+    // peça no alto da subida com a esteira empurrando: entra no lançador (se o flywheel estiver girando para o lado certo)
     if (!M.shot && st.length && st[0].q >= 0.999 && M.mid > 0.2) {
         const wE = bbShooterW(), frac = Math.abs(wE) / W;
         if (frac < 0.06 || wE < 0) M.jam = true;
@@ -17862,7 +17868,7 @@ function bbPolyHit(P, Q) {
 
 /* ---------------- desenvolvimento completo: portas do Expansion Hub ---------------- */
 // Expansion Hub 2 — motores: 0 = intake, 1 = midtake (esteira), 2 = segundo motor do lançador (nos de duas rodas),
-// 3 = shooter (volante); servos: 0 = torreta, 1 = braço, 2 = rolo do braço (Continuous Rotation Servo), 3 = capô móvel.
+// 3 = shooter (flywheel); servos: 0 = torreta, 1 = braço, 2 = rolo do braço (Continuous Rotation Servo), 3 = capô móvel.
 // O encoder da porta 2 é o do pod perpendicular quando os pods estão instalados.
 (function () {
     if (typeof FrHardwareMap === 'undefined') return;
@@ -17888,7 +17894,7 @@ function bbPolyHit(P, Q) {
         FrCRServo.prototype.getPortNumber = function () { return typeof this.port === 'string' ? +this.port.slice(1) : cp.call(this); };
         FrCRServo.prototype.getConnectionInfo = function () { return typeof this.port === 'string' ? 'Expansion Hub 2; servo port ' + this.port.slice(1) : 'Control Hub; servo port ' + this.port; };
     }
-    // encoders: porta 3 = volante (28 ticks por volta); portas 0 e 1 = intake e esteira, a não ser que um pod esteja ligado nelas
+    // encoders: porta 3 = flywheel (28 ticks por volta); portas 0 e 1 = intake e esteira, a não ser que um pod esteja ligado nelas
     const st = frWorld.shaftTicks, sv = frWorld.shaftTicksPerSec;
     frWorld.shaftTicks = port => {
         if (port === 'E3' && bbActive()) return BBG.mech.flyAng / (2 * Math.PI) * BB_BOT.flyTicksRev;
@@ -17902,7 +17908,7 @@ function bbPolyHit(P, Q) {
         if ((port === 'E0' || port === 'E1') && bbActive() && !(typeof frHas !== 'undefined' && frHas.pods())) return (port === 'E0' ? BBG.mech.intake : BBG.mech.mid) * 2800 / 5;
         return sv(port);
     };
-    // os volantes (portas 3 e 2) são goBILDA 6000 rpm: setVelocity/getVelocity em ticks por segundo (28 por volta, até 2800/s)
+    // os flywheels (portas 3 e 2) são goBILDA 6000 rpm: setVelocity/getVelocity em ticks por segundo (28 por volta, até 2800/s)
     const flyPort = m => m.port === 'E3' || (m.port === 'E2' && bbActive() && F3.field() === 'biobuzz');
     const FLY_TPS = BB_BOT.flyMaxRad / (2 * Math.PI) * BB_BOT.flyTicksRev;
     const setV = FrMotor.prototype.setVelocity, getV = FrMotor.prototype.getVelocity, mt = FrMotor.prototype.getMotorType;
@@ -17932,7 +17938,7 @@ function bbPolyHit(P, Q) {
 const BB_EX_NAMES = {
     turret: ['Torreta', 'Turret', 'torreta', 'turret'], fixed: ['Frente', 'Front', 'fixo na frente', 'fixed front'], back: ['Atras', 'Rear', 'fixo atrás', 'fixed rear'],
     hood: ['CapoFixo', 'FixedHood', 'capô fixo', 'fixed hood'], hoodServo: ['CapoMovel', 'MovingHood', 'capô móvel', 'moving hood'],
-    double: ['DoisVolantes', 'TwoFlywheels', 'dois volantes', 'two flywheels'], disc: ['DoisDiscos', 'TwoDiscs', 'dois discos', 'two discs'],
+    double: ['DoisFlywheels', 'TwoFlywheels', 'dois flywheels', 'two flywheels'], disc: ['DoisDiscos', 'TwoDiscs', 'dois discos', 'two discs'],
     top: ['RodaEmCima', 'TopWheel', 'roda em cima', 'top wheel']
 };
 // a câmera também faz parte do robô: a da montagem do desenvolvimento completo (C270, Limelight ou as duas)
@@ -17954,7 +17960,7 @@ function bbExampleJava(pt, setup) {
     const st = U.stype, S = bbSpec(st), two = S.motors === 2, hoodS = st === 'hoodServo', tur = U.shooter === 'turret';
     const hr = BB_BOT.hoodRange, hood0 = ((BB_BOT.hood - hr[0]) / (hr[1] - hr[0])).toFixed(3);
     const inl = st === 'disc' || st === 'top';
-    const VO = inl ? L('as rodas', 'the wheels') : L('o volante', 'the flywheel'), VD = inl ? L('das rodas', 'wheel') : L('do volante', 'flywheel'), VT = inl ? L('Rodas', 'Wheels') : L('Volante', 'Flywheel');
+    const VO = inl ? L('as rodas', 'the wheels') : L('o flywheel', 'the flywheel'), VD = inl ? L('das rodas', 'wheel') : L('do flywheel', 'flywheel'), VT = inl ? L('Rodas', 'Wheels') : L('Flywheel', 'Flywheel');
     // visão: a C270 abre um VisionPortal com a pose da câmera declarada (setCameraPose), que liga o robotPose; a Limelight
     // usa o pipeline 0 (AprilTags) e devolve o botpose (MegaTag1)
     const c270 = U.cam === 'c270' || U.cam === 'both', ll = U.cam === 'll' || U.cam === 'both';
@@ -17962,7 +17968,7 @@ function bbExampleJava(pt, setup) {
     // v26: com a C270 olhando para a frente (inclinação perto de 0°), ela também vê as peças no chão à frente do intake:
     // um ColorBlobLocatorProcessor por cor (amarelo = POLLEN; vermelho e azul = NECTAR) conta as peças que o robô pega
     const cor = c270 && Math.abs(cm.pitch) <= 10;
-    const kind = { hood: L('volante com capô fixo', 'flywheel with a fixed hood'), hoodServo: L('volante com capô móvel', 'flywheel with a moving hood'), double: L('dois volantes, sem capô', 'two flywheels, no hood'), disc: L('em linha, dois discos', 'in-line, two discs'), top: L('em linha, uma roda em cima', 'in-line, one wheel on top') }[st];
+    const kind = { hood: L('flywheel com capô fixo', 'flywheel with a fixed hood'), hoodServo: L('flywheel com capô móvel', 'flywheel with a moving hood'), double: L('dois flywheels, sem capô', 'two flywheels, no hood'), disc: L('em linha, dois discos', 'in-line, two discs'), top: L('em linha, uma roda em cima', 'in-line, one wheel on top') }[st];
     return `package org.firstinspires.ftc.teamcode;
 
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
@@ -18035,7 +18041,7 @@ ${two ? `        // ${L('o segundo motor está montado de frente para o primeiro
         double alvo = VEL_INICIAL;
 ${tur ? `        double posTorreta = 0.5;
 ` : ''}${hoodS ? `        double posCapo = ${hood0};   // ${L(`0 = ${hr[0]}°, 1 = ${hr[1]}°`, `0 = ${hr[0]}°, 1 = ${hr[1]}°`)}
-` : ''}        boolean volante = false, bracoFora = false, intakeLigado = false;
+` : ''}        boolean flywheel = false, bracoFora = false, intakeLigado = false;
         boolean yAntes = false, bAntes = false, cimaAntes = false, baixoAntes = false;
 
 ${c270 ? `        // ${L('câmera C270: as AprilTags do BIOBUZZ. A pose da câmera no robô vem da montagem da vista 3D', 'C270 camera: the BIOBUZZ AprilTags. The camera pose on the robot comes from the mount in the 3D view')}
@@ -18101,17 +18107,17 @@ ${cor ? `        // ${L('A C270 está a 0°: além das tags, ela vê o chão à 
             backRight.setPower((y + x - giro) / maior);
 
             // ${L(VT.toLowerCase() + ': Y liga/desliga, ↑ ↓ mudam a velocidade', VT.toLowerCase() + ': Y toggles, ↑ ↓ change the speed')}
-            if (gamepad1.y && !yAntes) volante = !volante;
+            if (gamepad1.y && !yAntes) flywheel = !flywheel;
 ${hoodS ? `            boolean ajustaCapo = gamepad1.right_trigger > 0.3;   // ${L('com o RT apertado, ↑ ↓ mexem no capô, e não na velocidade', 'with RT held, ↑ ↓ move the hood instead of the speed')}
             if (!ajustaCapo && gamepad1.dpad_up && !cimaAntes) alvo = Math.min(2800, alvo + 100);
             if (!ajustaCapo && gamepad1.dpad_down && !baixoAntes) alvo = Math.max(500, alvo - 100);` : `            if (gamepad1.dpad_up && !cimaAntes) alvo = Math.min(2800, alvo + 100);
             if (gamepad1.dpad_down && !baixoAntes) alvo = Math.max(500, alvo - 100);`}
-            shooter.setVelocity(volante ? alvo : 0);
-${two ? `            shooter2.setVelocity(volante ? alvo : 0);
+            shooter.setVelocity(flywheel ? alvo : 0);
+${two ? `            shooter2.setVelocity(flywheel ? alvo : 0);
             double vel = (shooter.getVelocity() + shooter2.getVelocity()) / 2;
-            boolean pronto = volante && Math.abs(shooter.getVelocity() - alvo) < 60 && Math.abs(shooter2.getVelocity() - alvo) < 60;
+            boolean pronto = flywheel && Math.abs(shooter.getVelocity() - alvo) < 60 && Math.abs(shooter2.getVelocity() - alvo) < 60;
 ` : `            double vel = shooter.getVelocity();
-            boolean pronto = volante && Math.abs(vel - alvo) < 60;
+            boolean pronto = flywheel && Math.abs(vel - alvo) < 60;
 `}
             // ${L('midtake: X atira (leva a peça da frente ao lançador), só com ' + VO + (inl ? ' prontas' : ' pronto'), 'midtake: X fires (carries the front piece into the shooter), only when ' + VO + (inl ? ' are' : ' is') + ' ready')}
             if (gamepad1.x && pronto) {
@@ -18496,7 +18502,7 @@ const V3_COL = {
     shooter: [149, 117, 205], shooterDk: [94, 53, 177], fly: [32, 32, 34], arm: [236, 64, 122], armDk: [173, 20, 87], cam: [18, 18, 20],
     hoodMov: [200, 120, 255]   // v27.4: trecho móvel do capô (antes escrito direto no desenho; agora as equipes trocam a cor dele)
 };
-// prisma de n lados ao longo de um eixo (rolos, volante, anel da torreta)
+// prisma de n lados ao longo de um eixo (rolos, flywheel, anel da torreta)
 function v3dPrism(c, axis, r, len, n, rot) {
     const A = v3norm(axis), ref = Math.abs(A.z) < 0.9 ? v3(0, 0, 1) : v3(1, 0, 0);
     const e1 = v3norm(v3cross(A, ref)), e2 = v3cross(A, e1);
@@ -18619,7 +18625,7 @@ function v3dChassis(add, M, chassis) {
 // as peças do robô, no referencial do robô (x frente, y esquerda, z cima); M = estado dos mecanismos.
 // Um robô de FTC plausível: chassi de perfis de alumínio, rodas mecanum de 104 mm com motores goBILDA, Control Hub e
 // bateria; intake com rodas flexíveis; midtake com correia e subida vertical pelo furo da torreta; lançador com
-// volante de 4 pol. e capô curvo (ou dois volantes de 3 pol., sem capô) e o motor;
+// flywheel de 4 pol. e capô curvo (ou dois flywheels de 3 pol., sem capô) e o motor;
 // braço em trilho linear. As peças impressas (placas do intake, guias do midtake, laterais do lançador, braço)
 // mantêm as cores de cada mecanismo.
 function v3dRobotParts(M, mount, stype, chassis) {
@@ -18681,7 +18687,7 @@ function v3dRobotParts(M, mount, stype, chassis) {
         add(v3dLBox(v3(T.x + dx, T.y + dy, 12.1), v3(sx, sy, 0.6)), C.aluDk, 'shooter');                            // base fixa (com furo)
     const k = 0.05, spin1 = M ? M.flyAng * k : 0, spin2 = M ? M.flyAng2 * k : 0;                   // giro mostrado mais devagar
     const glass = { alpha: 0.32 }, glassP = { alpha: 0.32, outline: true };
-    const wheel = (c, r, rot, w) => {                                                              // volante de eixo lateral: roda, cubo e eixo
+    const wheel = (c, r, rot, w) => {                                                              // flywheel de eixo lateral: roda, cubo e eixo
         add(v3dPrism(Lp(c), Ly, r, w || 2.2, 12, rot), C.fly, 'shooter');
         add(v3dPrism(Lp(c), Ly, r * 0.36, (w || 2.2) + 0.3, 6, rot), C.hub, 'shooter');
         add(v3dPrism(Lp(c), Ly, 0.16, 6.0, 6), C.hub, 'shooter');
@@ -18692,14 +18698,14 @@ function v3dRobotParts(M, mount, stype, chassis) {
         const W = g.W, rad = Math.PI / 180;
         const prof = [[-2.4, 12.5], [4.9, 12.5], [4.9, 15.3], [3.4, 16.1], [0.2, 16.1], [-2.2, 15.6]];
         for (const sy of [-1, 1]) add(v3dPlate(prof.map(([a, z]) => L(a, sy * 2.55, z)), Ly, 0.25), C.shooter, 'shooter', glassP);   // laterais de policarbonato
-        wheel(W, g.S.wheelR, spin1);                                                               // volante de 4 pol. (sentido horário visto da esquerda)
+        wheel(W, g.S.wheelR, spin1);                                                               // flywheel de 4 pol. (sentido horário visto da esquerda)
         motorY(W);
         const arc = (r, p0, p1, nk, col, w) => { for (let i = 0; i < nk; i++) {
             const t0 = (p0 + (p1 - p0) * i / nk) * rad, t1 = (p0 + (p1 - p0) * (i + 1) / nk) * rad;
             add(v3dSlab(L(W.a + r * Math.cos(t0), 0, W.z + r * Math.sin(t0)), L(W.a + r * Math.cos(t1), 0, W.z + r * Math.sin(t1)), Ly, w || 4.8, 0.2), col, 'shooter');
         } };
         if (g.type === 'hoodServo') {
-            // capô móvel: a parte fixa vai até 170°; o trecho curvo de fora gira em volta do eixo do volante, levado pelo servo
+            // capô móvel: a parte fixa vai até 170°; o trecho curvo de fora gira em volta do eixo do flywheel, levado pelo servo
             arc(g.S.hoodR + 0.1, g.S.phiIn + 1, 170, 5, C.shooterDk);
             const p0 = g.phiOut, p1 = g.phiOut + 40;
             arc(g.S.hoodR + 0.35, p0, p1, 5, C.hoodMov, 5.9);
@@ -18758,7 +18764,7 @@ function v3dRobot(R, pose, what) {
     const W = q => v3(pose.x + q.x * ch - q.y * sh, pose.y + q.x * sh + q.y * ch, q.z);
     const parts = v3dRobotParts(typeof bbActive === 'function' && bbActive() ? M : null, mount, stype), glass = [];
     for (const part of parts) { if (part.alpha) { glass.push(part); continue; } for (const f of part.faces) R.poly(f.map(W), part.color); for (const l of part.lines || []) R.line(W(l.a), W(l.b), l.color, 1); }
-    // laterais transparentes do lançador (policarbonato): por último, para mostrar o volante, o capô e a peça por dentro
+    // laterais transparentes do lançador (policarbonato): por último, para mostrar o flywheel, o capô e a peça por dentro
     for (const part of glass) {
         const F = part.faces.map(f => f.map(W));
         for (const f of F) R.poly(f, part.color, { twoSided: true, alpha: part.alpha });
@@ -18886,14 +18892,14 @@ const V3T = {
     mx: ['X frente', 'X fwd'], my: ['Y esquerda', 'Y left'], mz: ['Z altura', 'Z height'], myaw: ['Yaw', 'Yaw'], mpitch: ['Pitch', 'Pitch'], mroll: ['Roll', 'Roll'], mreset: ['↺ padrão', '↺ default'],
     game: ['Jogo (peças e mecanismos)', 'Game (pieces and mechanisms)'], shooter: ['Lançador', 'Shooter'], turret: ['torreta 360°', '360° turret'], fixed: ['fixo na frente', 'fixed forward'],
     back: ['fixo atrás', 'fixed rear'], stypeT: ['Tipo', 'Type'],
-    st_hood: ['capô fixo · 1 volante', 'fixed hood · 1 flywheel'], st_hoodServo: ['capô móvel (servo) · 1 volante', 'moving hood (servo) · 1 flywheel'],
-    st_double: ['dois volantes, sem capô · 2 motores', 'two flywheels, no hood · 2 motors'], st_disc: ['em linha, dois discos · 2 motores · fixo atrás', 'in-line, two discs · 2 motors · fixed rear'],
+    st_hood: ['capô fixo · 1 flywheel', 'fixed hood · 1 flywheel'], st_hoodServo: ['capô móvel (servo) · 1 flywheel', 'moving hood (servo) · 1 flywheel'],
+    st_double: ['dois flywheels, sem capô · 2 motores', 'two flywheels, no hood · 2 motors'], st_disc: ['em linha, dois discos · 2 motores · fixo atrás', 'in-line, two discs · 2 motors · fixed rear'],
     st_top: ['em linha, uma roda em cima · 1 motor', 'in-line, one wheel on top · 1 motor'],
     backNote: ['"fixo atrás" só para os lançadores em linha', '"fixed rear" only for the in-line shooters'],
     discNote: ['o lançador de dois discos é fixo atrás: atira por cima da traseira, seguindo a rampa', 'the two-disc shooter is fixed at the rear: it fires over the back, following the ramp'],
     flowers: ['FLOWERs', 'FLOWERs'], full: ['cheias (7)', 'full (7)'], official: ['4 (montagem oficial)', '4 (official setup)'], preload: ['POLLEN no robô no início', 'POLLEN preloaded'],
     resetPieces: ['⟲ Recolocar as peças', '⟲ Reset the pieces'], start: ['Posição inicial do robô', 'Robot start position'], example: ['📄 Carregar o exemplo (TeleOp BIOBUZZ)', '📄 Load the example (BIOBUZZ TeleOp)'],
-    keys: ['Teclado: W A S D e ← → dirigem · Espaço = intake · X = alimentar o lançador (atira) · Y = liga/desliga o volante · ↑ ↓ = força do volante · Q / E = gira a torreta · Z / C = abaixa e levanta o capô móvel · B = braço (sai e volta)', 'Keyboard: W A S D and ← → drive · Space = intake · X = feed the shooter (fires) · Y = flywheel on/off · ↑ ↓ = flywheel power · Q / E = turn the turret · Z / C = lower and raise the moving hood · B = arm (out and back)']
+    keys: ['Teclado: W A S D e ← → dirigem · Espaço = intake · X = alimentar o lançador (atira) · Y = liga/desliga o flywheel · ↑ ↓ = força do flywheel · Q / E = gira a torreta · Z / C = abaixa e levanta o capô móvel · B = braço (sai e volta)', 'Keyboard: W A S D and ← → drive · Space = intake · X = feed the shooter (fires) · Y = flywheel on/off · ↑ ↓ = flywheel power · Q / E = turn the turret · Z / C = lower and raise the moving hood · B = arm (out and back)']
 };
 const v3t = k => V3T[k][appLang() === 'pt' ? 0 : 1];
 // onde o robô "acha" que está: no modo pontual, o myState; no completo, Pinpoint, Limelight, C270 e o que o código manda na telemetria
@@ -19013,7 +19019,7 @@ function v3dCamInput() {
     o.e = Math.max(-5, Math.min(89, o.e + de * 45 * dt));          // 45°/s
     o.D = Math.max(40, Math.min(600, o.D * Math.pow(1.8, dz * dt)));
 }
-// trajetória prevista com a velocidade atual do volante (só com o volante girando)
+// trajetória prevista com a velocidade atual do flywheel (só com o flywheel girando)
 // cores dos arcos: amarelo para o POLLEN, vermelho-claro para o NECTAR
 const V3_TRAJ_COL = { pollen: [255, 224, 64], nectar: [255, 112, 112] };
 function v3dTraj(pose, showP, showN) {
@@ -19059,7 +19065,7 @@ function v3dGameInfo() {
         [`<i class="v3d-dot" style="background:rgb(${V3_COL.intake})"></i>Intake`, pc(M.intake)],
         [`<i class="v3d-dot" style="background:rgb(${V3_COL.mid})"></i>Midtake`, pc(M.mid) + (M.jam ? ' · ' + (pt ? 'travado: lançador parado' : 'jammed: shooter stopped') : '')],
         [`<i class="v3d-dot" style="background:rgb(${V3_COL.shooter})"></i>Shooter`, v3t('st_' + st) + ' · ' + (pt ? 'saída a ' : 'exit at ') + Math.round(g.alpha) + '°' + (M.shot ? (pt ? ' · peça passando' : ' · piece going through') : '')],
-        [two ? 'Motor 3' : st === 'top' ? (pt ? 'Roda' : 'Wheel') : (pt ? 'Volante' : 'Flywheel'), `${Math.round(rpm)} rpm (${pt ? 'alvo' : 'target'} ${Math.round(tgt)}${M.flyClosed ? ', setVelocity' : ''})`],
+        [two ? 'Motor 3' : st === 'top' ? (pt ? 'Roda' : 'Wheel') : (pt ? 'Flywheel' : 'Flywheel'), `${Math.round(rpm)} rpm (${pt ? 'alvo' : 'target'} ${Math.round(tgt)}${M.flyClosed ? ', setVelocity' : ''})`],
         ...(two ? [['Motor 2', `${Math.round(rpm2)} rpm (${pt ? 'alvo' : 'target'} ${Math.round(tgt2)}${M.flyClosed2 ? ', setVelocity' : ''})${rpm2 < -30 ? (pt ? ' · girando ao contrário (falta REVERSE?)' : ' · spinning backwards (missing REVERSE?)') : ''}`]] : []),
         [pt ? 'Saída' : 'Exit', `${Math.round(bbExitSpeed(bbShooterW(), 'pollen'))} ${pt ? 'pol/s (POLLEN)' : 'in/s (POLLEN)'}`],
         [pt ? 'Torreta' : 'Turret', BBG.opts.shooter === 'turret' ? (M.turret >= 0 ? '+' : '') + M.turret.toFixed(0) + '°' : BBG.opts.shooter === 'back' ? (pt ? 'fixo atrás' : 'fixed rear') : (pt ? 'fixo na frente' : 'fixed front')],
@@ -19871,7 +19877,7 @@ function lhMount(pz, pid, api) {
 /* ---------------- bateria (desenvolvimento completo) ----------------
    Bateria de 12 V NiMH (3000 mAh). A tensão em aberto cai com a carga (13,6 V cheia, 11,6 V vazia) e cai mais
    enquanto os motores puxam corrente (resistência interna de 0,08 Ω). A velocidade de um motor é proporcional à
-   tensão: com a bateria ligada, o robô anda e o volante gira à razão V / 12 da velocidade nominal. O setPower
+   tensão: com a bateria ligada, o robô anda e o flywheel gira à razão V / 12 da velocidade nominal. O setPower
    (malha aberta) sente a queda; o setVelocity (malha fechada, PIDF) compensa enquanto houver tensão sobrando. */
 const BAT_KEY = 'ftcSandbox.bat.v1';
 const BAT = {
@@ -20099,7 +20105,7 @@ const FR_SORT_ORDER = frEnum('SortOrder', ['ASCENDING', 'DESCENDING']);
    Para cada potência (setPower, com 12 V) — ou cada velocidade em ticks/s (setVelocity) —, a peça sai com
    v = η · ω · r e cai na altura do alvo a uma distância que sai da mesma parábola da física: z(t) = z0 + v·sen α·t − g·t²/2.
    A distância é medida na horizontal a partir do centro do robô, com o lançador apontado para o alvo. O ajuste
-   (mínimos quadrados) dá a velocidade do volante para cada distância: o ponto de partida para medir no robô real. */
+   (mínimos quadrados) dá a velocidade do flywheel para cada distância: o ponto de partida para medir no robô real. */
 function bbShotRange(ticks, kind, alpha, targetZ, type) {
     type = type || bbStype();
     const g = bbShooterGeom(type, alpha), w = ticks / BB_BOT.flyTicksRev * 2 * Math.PI, v = bbExitSpeed(w, kind, type);
@@ -20184,7 +20190,7 @@ function bbCalibJava(cal, pt) {
         const K = cal.kinds[kind], nm = kind === 'pollen' ? 'Pollen' : 'Nectar';
         if (!K.fit) continue;
         const c = K.fit.c;
-        lines.push(`static double ${L('ticksPara', 'ticksFor')}${nm}(double d) {   // ${L('ticks/s do volante (setVelocity)', 'flywheel ticks/s (setVelocity)')} — R² = ${K.fit.r2.toFixed(4)}`);
+        lines.push(`static double ${L('ticksPara', 'ticksFor')}${nm}(double d) {   // ${L('ticks/s do flywheel (setVelocity)', 'flywheel ticks/s (setVelocity)')} — R² = ${K.fit.r2.toFixed(4)}`);
         lines.push(`    return ${f(c[0])} + ${f(c[1])} * d + ${f(c[2])} * d * d;`);
         lines.push('}');
         if (K.fitA) {
@@ -20264,7 +20270,7 @@ function calPanelEl() {
     const out = h('div', { class: 'cal-out', id: 'cal-out' });
     const el = h('section', { class: 'card cal-panel', id: 'cal-panel' },
         h('h3', { class: 'cal-h', text: FRT('🎯 Calibração do lançador', '🎯 Shooter calibration') }),
-        h('p', { class: 'muted cal-intro', text: FRT('Para cada potência do volante (setPower com a bateria a 12 V; ticks/s = potência × 2800 no setVelocity) — e, no capô móvel, para cada ângulo do capô —, o Sandbox calcula com a mesma física do jogo até onde a peça vai, medindo do centro do robô até onde ela desce à altura do alvo. O ajuste por mínimos quadrados dá uma função distância → ticks/s: o ponto de partida para medir no robô real. O lançador é o escolhido na configuração do robô, na vista 3D.',
+        h('p', { class: 'muted cal-intro', text: FRT('Para cada potência do flywheel (setPower com a bateria a 12 V; ticks/s = potência × 2800 no setVelocity) — e, no capô móvel, para cada ângulo do capô —, o Sandbox calcula com a mesma física do jogo até onde a peça vai, medindo do centro do robô até onde ela desce à altura do alvo. O ajuste por mínimos quadrados dá uma função distância → ticks/s: o ponto de partida para medir no robô real. O lançador é o escolhido na configuração do robô, na vista 3D.',
             'For each flywheel power (setPower with the battery at 12 V; ticks/s = power × 2800 with setVelocity) — and, with the moving hood, for each hood angle —, the Sandbox computes with the same game physics how far the piece goes, measured from the robot center to where it comes down to the target height. A least-squares fit gives a distance → ticks/s function: the starting point to measure on the real robot. The shooter is the one chosen in the robot setup, in the 3D view.') }),
         h('div', { class: 'cal-ctl' },
             h('span', { text: FRT('Peça:', 'Piece:') }), seg([['pollen', 'POLLEN'], ['nectar', 'NECTAR'], ['both', FRT('as duas', 'both')]], () => CAL.kind, v => { CAL.kind = v; }),
@@ -20387,7 +20393,7 @@ const MT = { vmax: 34, acc: 70, wmax: 220, wacc: 600, half: 9, grid: 4, auto: 30
 // antes de cada tarefa e escolhem pior o que fazer. plan = chances do autônomo (só PARK, virar a HIVE, nada);
 // z, aim e bad = a "mão" (Seção 17.3); think = segundos parado entre uma tarefa e outra; pick = sorteio somado ao custo
 // de cada peça (maior = escolha pior); nectar = desconto do NECTAR; spot = como escolhe o ponto de arremesso;
-// flyReady = quanto do volante ele espera antes de atirar; margin = folga (s) para ir estacionar; wallPark = chance de
+// flyReady = quanto do flywheel ele espera antes de atirar; margin = folga (s) para ir estacionar; wallPark = chance de
 // estacionar encostado na parede (o PARK não conta); forget = chance de esquecer o PARK no fim
 const MT_LV = {
     smart:   { vmax: 34, acc: 70, wmax: 220, wacc: 600, plan: [0.50, 0.35, 0.15], z: [0.95, 1.45], aim: [1.0, 2.5], bad: [0.05, 0.09], think: [0, 0],     pick: 6,  nectar: 8, flower: true,  spot: 'best',   want: [2, 3, 4, 4, 4], flyReady: 0.92, margin: 5,  wallPark: 0,    forget: 0,    replan: 0.9 },
@@ -20754,7 +20760,7 @@ function mtFire(n) {
     const bad = Math.random() < n.skill.bad ? 3 : 1;
     // erro de velocidade proporcional à janela daquele ponto: a chance de acertar depende da "mão" do robô, não do ponto
     const sv = W.w / 2 / n.skill.z;
-    // v27: quem atira antes de o volante chegar à velocidade (rookie, mediana) perde força na peça
+    // v27: quem atira antes de o flywheel chegar à velocidade (rookie, mediana) perde força na peça
     const v = W.v * (1 + mtGauss() * sv * bad) * (1 - 0.25 * Math.max(0, 0.92 - n.fly)), yaw = n.h + mtGauss() * n.skill.sy * bad;
     const m = mtMuzzle(n.x, n.y, n.h), a = MT_SHOOT.alpha, yr = yaw * Math.PI / 180;
     n.store.splice(n.store.indexOf(s), 1);
@@ -21485,10 +21491,14 @@ function hpSpot(sd) {
     }
     return null;
 }
-function hpEnter(sd, quiet) {
-    const why = hpWhy(sd);
+function hpEnter(sd, quiet, force) {
+    let why = hpWhy(sd), foul = null;
+    // v27.10: o jogador humano do aluno pode errar: entrar o NECTAR antes da hora é MINOR FOUL por NECTAR (G426)
+    if (force && why === 'locked') { why = 'ok'; foul = 'G426'; }
     if (why !== 'ok') { if (!quiet) toast(why === 'empty' ? FRT('Não há mais NECTAR na bandeja', 'No NECTAR left in the tray') : why === 'idle' ? FRT('O NECTAR só entra com a partida rodando', 'NECTAR only enters while the match is running') : FRT('Ainda não: um NECTAR por virada da HIVE, ou todos nos últimos 60 s (G426)', 'Not yet: one NECTAR per HIVE tip, or all of them in the last 60 s (G426)')); return false; }
-    const s = hpSpot(sd);
+    let s = hpSpot(sd);
+    // com a LOADING ZONE ocupada, o NECTAR cai em cima de um robô: MINOR FOUL (G427)
+    if (!s && force) { const z = BB.loading[sd]; s = { x: (z.x0 + z.x1) / 2, y: (z.y0 + z.y1) / 2 }; foul = foul || 'G427'; }
     if (!s) { if (!quiet) toast(FRT('A LOADING ZONE está ocupada: o NECTAR tem que tocar o piso antes de tocar um robô (G427)', 'The LOADING ZONE is blocked: the NECTAR must touch the tile before touching a robot (G427)')); return false; }
     const P = HP[sd];
     // colocado à mão, sem ferramenta nem lançamento: solto a 5 pol. do piso, quase parado
@@ -21496,8 +21506,9 @@ function hpEnter(sd, quiet) {
     b.v = v3((sd === 'red' ? 1 : -1) * mtRand(0, 4), mtRand(-2, 2), 0); b.hp = { t: BBG.t };
     BBG.balls.push(b);
     P.tray--; P.entered++;
-    if (P.back > 0) P.back--; else if (!hpEndgame()) P.used++;
+    if (P.back > 0) P.back--; else if (!hpEndgame() && foul !== 'G426') P.used++;
     if (typeof bbEvent === 'function') bbEvent('nectar-' + sd);
+    if (foul && typeof penAdd === 'function') penAdd(sd, appLang() === 'pt' ? 'jogador humano' : 'human player', foul, ['minor']);
     return true;
 }
 // automático: o jogador humano dos outros robôs (e o seu, se a opção estiver ligada) entra o NECTAR assim que pode,
@@ -21517,7 +21528,7 @@ function hpStep() {
     BBG.balls = BBG.balls.filter(b => b.st !== 'gone');
 }
 function v27HumanEl() {
-    const btn = h('button', { class: 'btn small', id: 'hp-btn', text: '🖐 ' + FRT('Entrar um NECTAR', 'Enter a NECTAR'), onclick: () => hpEnter(MATCH.side) });
+    const btn = h('button', { class: 'btn small', id: 'hp-btn', text: '🖐 ' + FRT('Entrar um NECTAR', 'Enter a NECTAR'), onclick: () => hpEnter(MATCH.side, false, true) });
     const chk = h('label', { class: 'fr-chk' }, h('input', { type: 'checkbox', checked: HP.mineAuto ? true : null, onchange: e => { HP.mineAuto = e.target.checked; try { localStorage.setItem('ftcSandbox.hp.v27', JSON.stringify({ mineAuto: HP.mineAuto })); } catch (er) {} } }), ' ', FRT('automático', 'automatic'));
     return h('div', { class: 'v27-hp', id: 'v27-hp' }, h('div', { class: 'v27-sub', text: FRT('Jogador humano (sua aliança)', 'Human player (your alliance)') }),
         h('div', { class: 'v3d-grow' }, btn, chk), h('div', { class: 'muted v27-hp-info', id: 'hp-info' }));
@@ -21552,11 +21563,12 @@ const FLOWER_CAP = 8;
                 const stack = BBG.flowers[fi];
                 if (stack.length >= FLOWER_CAP) return;
                 const by = b.shot ? (b.shot.npc ? (MATCH.npcs.find(n => n.id === b.shot.npc) || {}).side : (typeof v27Alliance === 'function' ? v27Alliance() : null)) : b.color;
+                const who = b.shot ? (b.shot.npc ? (MATCH.npcs.find(n => n.id === b.shot.npc) || {}).label : (appLang() === 'pt' ? 'você' : 'you')) : null;
                 b.st = 'flower'; b.at = { fi, top: true, t: BBG.t, by: by || null }; b.v = v3(0, 0, Math.min(0, b.v.z)); b.shot = null; b.rest = false;
                 stack.push(b);
                 if (typeof bbEvent === 'function') bbEvent('flower-' + fi);
-                // G410: NECTAR na FLOWER antes de faltar um minuto é MINOR FOUL (a pontuação vale, mas com a falta)
-                if (b.kind === 'nectar' && mtActive() && mtLive() && !(MATCH.phase === 'teleop' && MT.tele - MATCH.T <= 60) && by) scFoul(by, 'minor', 'G410');
+                // G410: NECTAR na FLOWER antes de faltar um minuto é MAJOR FOUL por NECTAR (a pontuação vale, mas com a falta)
+                if (b.kind === 'nectar' && mtActive() && mtLive() && !(MATCH.phase === 'teleop' && MT.tele - MATCH.T <= 60) && by) { if (typeof penAdd === 'function') penAdd(by, who, 'G410', ['major']); else scFoul(by, 'major', 'G410'); }
             });
         }
         if (prev && b.st === 'free') prev(b);
@@ -21577,6 +21589,7 @@ const FLOWER_CAP = 8;
 const SC_PTS = { leave: 3, park: 5, tip: 20, cell: 2, bonus: 5, flower: 2, garden: 1, minor: 5, major: 20 };
 const SC = { pop: { red: null, blue: null }, leave: null, autoPark: null, telePark: null, tipsA: { red: 0, blue: 0 }, tipsT: { red: 0, blue: 0 }, fouls: { red: [], blue: [] }, final: null };
 const scPop = sd => { const q = SC.pop && SC.pop[sd]; return q && frClock() - q.t < 5 && frClock() >= q.t ? q.txt : null; };
+const scPopCls = sd => (SC.pop && SC.pop[sd] && SC.pop[sd].cls) || 'rp';
 function scReset() { SC.pop = { red: null, blue: null }; SC.leave = SC.autoPark = SC.telePark = SC.final = null; SC.tipsA = { red: 0, blue: 0 }; SC.tipsT = { red: 0, blue: 0 }; SC.fouls = { red: [], blue: [] }; }
 function scFoul(by, kind, rule) { if (SC.fouls[by]) SC.fouls[by].push({ kind, rule, t: MATCH.T, ph: MATCH.phase }); }
 // os robôs da partida, cada um com a sua caixa de 18 × 18 pol.
@@ -21631,7 +21644,7 @@ function scCalc() {
             leave: SC_PTS.leave * cnt(SC.leave), autoPark: SC_PTS.park * cnt(SC.autoPark), tipsA: SC_PTS.tip * SC.tipsA[sd], tipsT: SC_PTS.tip * SC.tipsT[sd],
             cell: SC_PTS.cell * F.cell[sd], bonus: SC_PTS.bonus * F.bonus[sd], flower: SC_PTS.flower * F.flower[sd], garden: SC_PTS.garden * F.garden[sd],
             telePark: SC_PTS.park * cnt(SC.telePark),
-            foul: SC.fouls[op].reduce((s, f) => s + (f.kind === 'major' ? SC_PTS.major : SC_PTS.minor), 0)
+            foul: SC.fouls[op].reduce((s, f) => s + (f.kind === 'major' ? SC_PTS.major : f.kind === 'minor' ? SC_PTS.minor : 0), 0)   // advertências e cartões não dão pontos
         };
         p.total = Object.values(p).reduce((s, v) => s + v, 0);
         p.tips = SC.tipsA[sd] + SC.tipsT[sd];
@@ -21662,7 +21675,7 @@ function scHtml() {
     const notes = [];
     if (live) notes.push(pt ? '* só conta no fim da partida, com tudo parado (manual, 10.5); entre parênteses, quanto valeria se a partida acabasse agora' : '* only counts at the end of the match, with everything at rest (manual, 10.5); in parentheses, what it would be worth if the match ended now');
     for (const L of [SC.autoPark, SC.telePark]) if (L) for (const r of L) if (r.inZone && r.wall) notes.push(pt ? `${r.label}: na LOADING ZONE, mas encostado na parede — o PARK não conta` : `${r.label}: in the LOADING ZONE but touching the wall — PARK does not count`);
-    for (const sd of ['red', 'blue']) for (const f of SC.fouls[sd]) notes.push(`${pt ? 'Falta' : 'Foul'} ${f.kind === 'major' ? 'MAJOR' : 'MINOR'} (${f.rule}) ${pt ? 'da aliança' : 'by'} ${pt ? (sd === 'red' ? 'vermelha' : 'azul') : sd}: +${f.kind === 'major' ? 20 : 5} ${pt ? 'para o adversário' : 'to the opponent'}`);
+    if (typeof penNotes === 'function') notes.push(...penNotes());
     if (notes.length) s += `<div class="muted v27-notes">${[...new Set(notes)].join('<br>')}</div>`;
     return s;
 }
@@ -21693,7 +21706,7 @@ function scHtml() {
                 (MATCH.phase === 'auto' ? SC.tipsA : SC.tipsT)[sd] += d; if (HP[sd]) HP[sd].credits += d;
                 // v27.9: aviso de 5 s quando a aliança chega a 4 viradas (POLLINATOR 1 RP) ou a 7 (POLLINATOR 2 RP)
                 const tot = SC.tipsA[sd] + SC.tipsT[sd], prev = tot - d;
-                for (const [n, lbl] of [[4, 'POLLINATOR 1'], [7, 'POLLINATOR 2']]) if (prev < n && tot >= n) SC.pop[sd] = { txt: lbl, t: frClock() };
+                for (const [n, lbl] of [[4, 'POLLINATOR 1'], [7, 'POLLINATOR 2']]) if (prev < n && tot >= n) SC.pop[sd] = { txt: lbl, t: frClock(), cls: 'rp' };
             }
         }
         return r;
@@ -21720,7 +21733,7 @@ function scHtml() {
         const now = performance.now(); if (now - T27 < 200) return r; T27 = now;
         v27SyncLevels();
         const hi = document.getElementById('hp-info'); if (hi) { const t = hpInfoTxt(); if (hi.textContent !== t) hi.textContent = t; }
-        const hb = document.getElementById('hp-btn'); if (hb) hb.disabled = !mtActive() || hpWhy(MATCH.side) !== 'ok';
+        const hb = document.getElementById('hp-btn'); if (hb) { const w = mtActive() ? hpWhy(MATCH.side) : 'idle'; hb.disabled = w === 'idle' || w === 'empty'; hb.classList.toggle('hp-foul', w === 'locked'); hb.title = w === 'locked' ? FRT('Ainda não é a hora: entrar agora é MINOR FOUL (G426)', 'Not yet: entering now is a MINOR FOUL (G426)') : ''; }
         return r;
     };
 })();
@@ -21729,7 +21742,7 @@ function v27BoardHtml() {
     const S = scCalc(), ph = MATCH.phase, dur = ph === 'auto' ? MT.auto : MT.tele, live = mtLive();
     const u = sd => Math.round(Math.min(1, bbTipUnits(sd)) * 100);
     const clock = live ? (ph === 'auto' ? 'AUTO ' : (dur - MATCH.T <= MT.endgame ? '⏱ ' : '') + 'TELEOP ') + mtClockTxt(dur - MATCH.T) : mtt2('ph', ph);
-    const pop = sd => scPop(sd) ? `<span class="mt-pop ${sd}">🐝 ${scPop(sd)}</span>` : '';
+    const pop = sd => scPop(sd) ? `<span class="mt-pop ${sd} ${scPopCls(sd)}">${scPopCls(sd) === 'rp' ? '🐝 ' : ''}${scPop(sd)}</span>` : '';
     return `<span class="mt-b red"><b>${S.red.total}</b> · ${MATCH.tips.red}⟲ ${u('red')}%</span>${pop('red')}<span class="mt-b mid">${clock}</span><span class="mt-b blue">${u('blue')}% ${MATCH.tips.blue}⟲ · <b>${S.blue.total}</b></span>${pop('blue')}`;
 }
 // a cor da aliança também muda fora da partida (ao trocar a posição inicial ou o campo)
@@ -22299,7 +22312,10 @@ function v3dBoard(R) {
     const S = scCalc(), ph = MATCH.phase, dur = ph === 'auto' ? MT.auto : MT.tele, live = mtLive(), left = dur - MATCH.T;
     const u = sd => Math.round(Math.min(1, bbTipUnits(sd)) * 100);
     const clock = live ? (ph === 'auto' ? 'AUTO ' : 'TELEOP ') + mtClockTxt(left) : mtt2('ph', ph);
-    const popP = sd => scPop(sd) ? [{ t: '🐝 ' + scPop(sd), sub: FRT('ranking point', 'ranking point'), bg: 'rgba(255,213,79,.95)', fg: '#1a1a1a', pop: true }] : [];
+    const popP = sd => { if (!scPop(sd)) return []; const c = scPopCls(sd), foul = c !== 'rp';
+        return [{ t: (foul ? '' : '🐝 ') + scPop(sd), sub: foul ? (PEN_TXT[(SC.pop[sd].txt.match(/G\d{3}/) || [''])[0]] ? penL(PEN_TXT[SC.pop[sd].txt.match(/G\d{3}/)[0]]) : FRT('penalidade', 'penalty')) : FRT('ranking point', 'ranking point'),
+            bg: !foul ? 'rgba(255,213,79,.95)' : /major|red/.test(c) ? 'rgba(183,28,28,.95)' : /yellow/.test(c) ? 'rgba(255,214,0,.95)' : /minor/.test(c) ? 'rgba(239,108,0,.95)' : 'rgba(55,71,79,.95)',
+            fg: !foul || /yellow/.test(c) ? '#1a1a1a' : '#fff', pop: true }]; };
     const parts = [
         { t: `${S.red.total}`, sub: `${MATCH.tips.red}⟲ · ${u('red')}%`, bg: 'rgba(211,47,47,.92)', fg: '#fff' },
         ...popP('red'),
@@ -22332,6 +22348,190 @@ function v3dBoard(R) {
         return r;
     };
 })();
+
+/* =====================================================================
+   v27.10: AS PENALIDADES DO JOGO (Seção 11 do manual, TU05)
+   Cada regra que o Sandbox consegue ver é conferida a cada passo, para o
+   robô do aluno e para os outros robôs, com a penalidade do manual:
+   VERBAL WARNING (advertência, sem pontos), MINOR FOUL (5 pontos para o
+   adversário), MAJOR FOUL (20) e cartões (YELLOW; o segundo YELLOW da
+   mesma partida vira RED, que desclassifica o robô). Quando o manual
+   pede que a ação seja STRATEGIC (de propósito) para punir mais, o
+   Sandbox usa sinais objetivos: repetição (3 vezes), duração ou
+   velocidade. Regras que dependem só do juízo do árbitro (G411, G419,
+   G420) ou que o Sandbox não deixa acontecer não são marcadas.
+   ===================================================================== */
+const PEN = { cnt: {}, once: {}, cards: {}, pin: {}, shotDir: {}, st: {}, hiveT: {}, ctl: {}, last: {} };
+const PEN_TXT = {
+    G401: ['mexer no controle durante o AUTO', 'touching the controls during AUTO'],
+    G402: ['atrapalhar o AUTO do adversário, no lado dele', 'interfering with the opponent AUTO on their side'],
+    G403: ['robô se mexendo entre o AUTO e o TELEOP', 'robot moving between AUTO and TELEOP'],
+    G404: ['robô se mexendo depois do fim do TELEOP', 'robot moving after the end of TELEOP'],
+    G405: ['jogar uma peça para fora do campo de propósito', 'deliberately ejecting a scoring element'],
+    G407: ['controlar mais de 4 peças', 'controlling more than 4 scoring elements'],
+    G408: ['controlar (pegar ou lançar) o NECTAR do adversário', 'controlling (picking up or launching) opponent NECTAR'],
+    G409: ['pegar uma peça que caiu da HIVE antes de ela tocar outra coisa', 'catching a piece released by a tipped HIVE'],
+    G410: ['NECTAR na FLOWER antes de faltar um minuto', 'NECTAR in a FLOWER before one minute left'],
+    G417: ['bater na estrutura da HIVE', 'meddling with the HIVE structure'],
+    G418: ['tirar NECTAR de uma FLOWER', 'removing NECTAR from a FLOWER'],
+    G421: ['prender (PIN) um robô adversário por mais de 3 s', 'pinning an opponent robot for more than 3 s'],
+    G426: ['jogador humano: NECTAR entrando antes da hora', 'human player: NECTAR entered early'],
+    G427: ['jogador humano: NECTAR entrando fora da regra da LOADING ZONE', 'human player: NECTAR not entered per the LOADING ZONE rule']
+};
+const PEN_KIND = { warn: ['advertência', 'verbal warning'], minor: ['MINOR FOUL', 'MINOR FOUL'], major: ['MAJOR FOUL', 'MAJOR FOUL'], yellow: ['cartão amarelo', 'YELLOW CARD'], red: ['cartão vermelho', 'RED CARD'] };
+const PEN_ICON = { warn: '⚠️', minor: '🟧', major: '🟥', yellow: '🟨', red: '🟥🃏' };
+const penL = a => a[appLang() === 'pt' ? 0 : 1];
+function penReset() { for (const k of Object.keys(PEN)) PEN[k] = {}; }
+// registra uma penalidade: kinds é a lista (por exemplo ['major', 'yellow']); o segundo amarelo do mesmo robô vira vermelho
+function penAdd(side, who, rule, kinds, extra) {
+    if (!side || !SC.fouls[side]) return;
+    who = who || (side === MATCH.side ? (appLang() === 'pt' ? 'você' : 'you') : '?');
+    for (let kind of kinds) {
+        if (kind === 'yellow') { PEN.cards[who] = (PEN.cards[who] || 0) + 1; if (PEN.cards[who] >= 2) kind = 'red'; }
+        SC.fouls[side].push({ kind, rule, who, t: MATCH.T, ph: MATCH.phase, extra: extra || '' });
+        if (kind === 'red' && who === (appLang() === 'pt' ? 'você' : 'you')) SC.dq = true;
+    }
+    const top = kinds.includes('red') || kinds.includes('yellow') && PEN.cards[who] >= 2 ? 'red' : kinds.includes('major') ? 'major' : kinds.includes('yellow') ? 'yellow' : kinds.includes('minor') ? 'minor' : 'warn';
+    SC.pop[side] = { txt: `${PEN_ICON[top]} ${rule} · ${penL(PEN_KIND[top])}${kinds.includes('major') ? ' +20' : kinds.includes('minor') ? ' +5' : ''}`, t: frClock(), cls: 'foul ' + top };
+}
+// mais uma ocorrência da regra para esse robô; devolve o número de vezes
+const penCount = (who, rule) => (PEN.cnt[who + rule] = (PEN.cnt[who + rule] || 0) + 1);
+scFoul = function (by, kind, rule) { penAdd(by, null, rule, [kind]); };
+
+/* ---------------- os robôs, do jeito que as regras precisam ---------------- */
+function penBots() {
+    const pt = appLang() === 'pt', pp = mtPlayerPose(), RV = BBG.robotV || { x: 0, y: 0 };
+    const out = [{ me: true, who: pt ? 'você' : 'you', side: MATCH.side, x: pp.x, y: pp.y, h: pp.h, v: Math.hypot(RV.x || 0, RV.y || 0) }];
+    for (const n of MATCH.npcs) out.push({ npc: n, who: n.label, side: n.side, x: n.x, y: n.y, h: n.h, v: Math.hypot(n.vx, n.vy) });
+    return out;
+}
+const penTouch = (a, b) => Math.hypot(a.x - b.x, a.y - b.y) < 27 && bbPolyHit(mtPoly(a.x, a.y, a.h, 9.3), mtPoly(b.x, b.y, b.h, 9.3));
+const penVmax = () => config.linearSpeed * IN_PER_UNIT * 60;   // pol/s do robô do aluno
+
+/* ---------------- conferência a cada passo ---------------- */
+function penStep(dt) {
+    const ph = MATCH.phase, live = mtLive(), bots = penBots(), me = bots[0], pt = appLang() === 'pt', M = BBG.mech;
+    // ---- G401: mexer no controle (gamepad ou teclado do robô) com o OpMode do AUTO rodando: advertência, uma vez
+    if (ph === 'auto' && !PEN.once.G401) {
+        const g = typeof buildGamepad === 'function' ? buildGamepad(1) : {};
+        const used = Object.keys(GP_BUTTONS).some(k => g[k]) || ['left_stick_x', 'left_stick_y', 'right_stick_x', 'right_stick_y', 'left_trigger', 'right_trigger'].some(k => Math.abs(g[k] || 0) > 0.3);
+        if (used) { PEN.once.G401 = 1; penAdd(me.side, me.who, 'G401', ['warn']); }
+    }
+    // ---- G402: no AUTO, encostar num adversário estando no lado dele (MAJOR uma vez por partida)
+    if (ph === 'auto') for (const a of bots) {
+        const onOpp = a.side === 'red' ? a.x > 0 : a.x < 0;
+        if (!onOpp || PEN.once['G402' + a.who]) continue;
+        if (bots.some(b => b.side !== a.side && penTouch(a, b))) { PEN.once['G402' + a.who] = 1; penAdd(a.side, a.who, 'G402', ['major']); }
+    }
+    // ---- G403 / G404: robô do aluno com movimento motorizado entre os períodos ou depois do fim
+    if ((ph === 'autoDone' || ph === 'done') && typeof FR_RUN !== 'undefined' && FR_RUN && FR_RUN.phase === 'running') {
+        const rule = ph === 'autoDone' ? 'G403' : 'G404';
+        const pm = typeof pendingMotors !== 'undefined' && pendingMotors ? Object.values(pendingMotors).some(v => Math.abs(v) > 0.05) : false;
+        const mech = Math.abs(M.intake) > 0.05 || Math.abs(M.mid) > 0.05 || Math.abs(M.flyTarget || 0) > 1 || Math.abs(M.flyTarget2 || 0) > 1;
+        if (!PEN.last[rule]) PEN.last[rule] = { x: me.x, y: me.y };
+        if ((pm || mech) && !PEN.once[rule]) { PEN.once[rule] = 1; penAdd(me.side, me.who, rule, ['warn']); }
+        // STRATEGIC: andou mais de 6 pol. com os motores
+        if (pm && !PEN.once[rule + 's'] && Math.hypot(me.x - PEN.last[rule].x, me.y - PEN.last[rule].y) > 6) { PEN.once[rule + 's'] = 1; penAdd(me.side, me.who, rule, ['major', 'yellow']); }
+    }
+    if (!live) return;
+    // ---- G407 e G408: o que o robô do aluno controla
+    const ctl = M.store.map(s => s.b).concat(M.shot ? [M.shot.b] : [], M.held ? [M.held] : []);
+    if (ctl.length > 4) {
+        PEN.ctl.t = (PEN.ctl.t || 0) + dt;
+        if (!PEN.ctl.on) { PEN.ctl.on = true; const n = penCount(me.who, 'G407'); penAdd(me.side, me.who, 'G407', n >= 3 || ctl.length >= 6 ? ['major', 'yellow'] : ['warn']); }
+        else if (PEN.ctl.t > 2 && !PEN.ctl.long) { PEN.ctl.long = true; if (!PEN.once.G407s) { PEN.once.G407s = 1; penAdd(me.side, me.who, 'G407', ['major', 'yellow'], pt ? 'mais de 2 s' : 'over 2 s'); } }
+    } else { PEN.ctl.on = false; PEN.ctl.t = 0; PEN.ctl.long = false; }
+    for (const b of ctl) if (b.kind === 'nectar' && b.color !== me.side && !PEN.ctl['n' + b.id]) {
+        PEN.ctl['n' + b.id] = 1;
+        const n = penCount(me.who, 'G408');
+        penAdd(me.side, me.who, 'G408', n === 3 ? ['warn', 'yellow'] : ['warn'], n > 1 ? (pt ? `${n}ª vez` : `${n} times`) : '');
+    }
+    // ---- peças: mudanças de estado (G409, G418) e lançamentos (G405)
+    for (const b of BBG.balls) {
+        const prev = PEN.st[b.id]; PEN.st[b.id] = b.st;
+        // G409: peça que sai da CELL que virou para baixo fica "caindo da HIVE" até tocar o chão (ou por 3 s). Conta como
+        // pegar quando ela entra no robô ou para em cima dele antes disso; uma batida que a desvia é acidental (o manual não
+        // quer punir o robô que só estava embaixo da HIVE) e não conta. Uma ocorrência por robô a cada virada.
+        if (prev === 'cell' && b.st === 'free') { b.spill = BBG.t; b.spillTip = (MATCH.tips.red + MATCH.tips.blue) + ':' + (b.color || '') ; }
+        if (b.spill && (BBG.t - b.spill > 3 || (b.st === 'free' && b.p.z <= b.r + 0.1))) b.spill = false;
+        if (b.spill) {
+            let by = null;
+            if (b.st === 'robot' || M.held === b) by = me; else if (b.st === 'npc') by = bots.find(q => q.npc && b.at && q.npc.id === b.at.npc);
+            else if (b.st === 'free' && Math.hypot(b.v.x, b.v.y, b.v.z) < 3) by = bots.find(q => b.p.z >= BB_BOT.height - 1 && bbBotOverlap(b, { x: q.x, y: q.y, h: q.h, H: 9 }) > 0);
+            if (by && !PEN.once['G409' + by.who + b.spillTip]) {
+                PEN.once['G409' + by.who + b.spillTip] = 1; b.spill = false;
+                const n = penCount(by.who, 'G409'); penAdd(by.side, by.who, 'G409', n === 3 ? ['warn', 'yellow'] : ['warn']);
+            }
+        }
+        // G418: NECTAR saindo de uma FLOWER pela retirada de baixo (só POLLEN pode sair)
+        if (prev === 'flower' && b.st !== 'flower' && b.kind === 'nectar' && (b.st === 'robot' || b.st === 'npc' || M.held === b)) {
+            const by = b.st === 'npc' ? bots.find(q => q.npc && b.at && q.npc.id === b.at.npc) : me;
+            const n = penCount(by.who, 'G418'); penAdd(by.side, by.who, 'G418', n >= 3 ? ['major', 'yellow'] : ['warn']);
+        }
+        // G405: peça lançada para longe da HIVE da própria aliança (mais de 90°) que sai do campo
+        if (b.shot && !PEN.shotDir[b.id + ':' + b.shot.t]) {
+            const sideL = b.shot.npc ? (MATCH.npcs.find(n => n.id === b.shot.npc) || {}).side : me.side, whoL = b.shot.npc ? (MATCH.npcs.find(n => n.id === b.shot.npc) || {}).label : me.who;
+            const hx = (sideL === 'red' ? -1 : 1) * BB.xc, aim = Math.atan2(0 - b.p.y, hx - b.p.x), dir = Math.atan2(b.v.y, b.v.x);
+            const d = Math.abs(((dir - aim) * 180 / Math.PI + 540) % 360 - 180);
+            PEN.shotDir[b.id + ':' + b.shot.t] = { away: d > 90 && Math.hypot(b.v.x, b.v.y) > 20, side: sideL, who: whoL, t: BBG.t };
+        }
+        if (b.out && !b.outSeen) {
+            b.outSeen = true;
+            const k = Object.keys(PEN.shotDir).filter(q => q.startsWith(b.id + ':')).pop(), S = k && PEN.shotDir[k];
+            if (S && S.away && BBG.t - S.t < 4) penAdd(S.side, S.who, 'G405', ['major']);
+        }
+        if (!b.out) b.outSeen = false;
+    }
+    // ---- G417: o robô do aluno bate numa perna da estrutura da HIVE em alta velocidade (ou 3 vezes em 10 s)
+    {
+        const legs = bbObstacles().slice(0, 2).map(o => ({ x0: o.x0 - 0.6, x1: o.x1 + 0.6, y0: o.y0 - 0.6, y1: o.y1 + 0.6 }));
+        const touch = legs.some(o => bbPolyHit(mtPoly(me.x, me.y, me.h, 9), mtBox(o)));
+        if (touch && !PEN.hiveT.on) {
+            PEN.hiveT.on = true; PEN.hiveT.list = (PEN.hiveT.list || []).filter(t => BBG.t - t < 10).concat([BBG.t]);
+            const fast = (PEN.hiveT.v || 0) > 0.6 * penVmax(), rep = PEN.hiveT.list.length >= 3;
+            if (fast || rep) penAdd(me.side, me.who, 'G417', rep ? ['major', 'yellow'] : ['warn'], fast ? (pt ? 'em alta velocidade' : 'at high speed') : (pt ? '3 vezes em 10 s' : '3 times in 10 s'));
+        }
+        if (!touch) PEN.hiveT.on = false;
+        PEN.hiveT.v = me.v;
+    }
+    // ---- G421: PIN — um robô impede o adversário de andar, encostado nele, por mais de 3 s (MAJOR, e mais um a cada 3 s)
+    for (const a of bots) for (const v of bots) {
+        if (a === v || a.side === v.side || (!a.me && !v.me)) continue;
+        const key = a.who + '>' + v.who, P = PEN.pin[key] || (PEN.pin[key] = { t: 0, n: 0, away: 0 });
+        const blocked = v.me ? (Math.hypot(lastChassis.vx || 0, lastChassis.vy || 0) < 0.05 * config.linearSpeed && desiredMoving()) : (v.npc.stuck > 0.3);
+        if (penTouch(a, v) && blocked && a.v <= v.v + 15) { P.t += dt; P.away = 0; }
+        else if (Math.hypot(a.x - v.x, a.y - v.y) > 24) { P.away += dt; if (P.away > 3) { P.t = 0; P.n = 0; } }
+        const due = Math.floor(P.t / 3);
+        while (P.n < due) { P.n++; penAdd(a.side, a.who, 'G421', ['major'], P.n > 1 ? (pt ? `PIN continua (${P.n * 3} s)` : `PIN continues (${P.n * 3} s)`) : ''); }
+    }
+}
+// o aluno está pedindo para o robô andar? (OpMode ou teclado/controle)
+function desiredMoving() {
+    if (typeof pendingMotors !== 'undefined' && pendingMotors) return Object.values(pendingMotors).some(v => Math.abs(v) > 0.2);
+    const w = typeof desiredChassis === 'function' ? desiredChassis() : null;
+    return !!w && Math.hypot(w.vx || 0, w.vy || 0) > 0.2 * config.linearSpeed;
+}
+(function () {
+    const st = mtStep;
+    mtStep = function (dt) {
+        const r = st.apply(this, arguments);
+        if (mtActive() && !PRE.busy) { try { penStep(dt || 1 / 60); } catch (e) { if (!PEN.err) { PEN.err = true; console.warn('penalidades:', e); } } }
+        return r;
+    };
+    const sr = scReset;
+    scReset = function () { const r = sr.apply(this, arguments); penReset(); SC.dq = false; return r; };
+})();
+// lista das penalidades no cartão da partida
+function penNotes() {
+    const out = [], pt = appLang() === 'pt';
+    for (const sd of ['red', 'blue']) for (const f of SC.fouls[sd]) {
+        const pts = f.kind === 'major' ? (pt ? ' (+20 para o adversário)' : ' (+20 to the opponent)') : f.kind === 'minor' ? (pt ? ' (+5 para o adversário)' : ' (+5 to the opponent)') : '';
+        const tt = mtClockTxt(Math.max(0, (f.ph === 'auto' ? MT.auto : MT.tele) - f.t));
+        out.push(`${PEN_ICON[f.kind]} <b>${f.rule}</b> · ${penL(PEN_KIND[f.kind])}${pts} · ${f.who} (${pt ? (sd === 'red' ? 'vermelha' : 'azul') : sd}) · ${PEN_TXT[f.rule] ? penL(PEN_TXT[f.rule]) : ''}${f.extra ? ' · ' + f.extra : ''} · ${f.ph === 'auto' ? 'AUTO' : f.ph === 'teleop' ? 'TELEOP' : ''} ${f.ph === 'auto' || f.ph === 'teleop' ? tt : ''}`);
+    }
+    if (SC.dq) out.push(pt ? '🟥 <b>Você foi desclassificado</b> (dois cartões amarelos = vermelho): numa partida de classificação, 0 pontos e 0 RANKING POINTS para você; o aliado fica com o placar da aliança.' : '🟥 <b>You were disqualified</b> (two yellow cards = red): in a qualification match, 0 points and 0 RANKING POINTS for you; your ally keeps the alliance score.');
+    return out;
+}
 </script>
 </body>
 </html>
