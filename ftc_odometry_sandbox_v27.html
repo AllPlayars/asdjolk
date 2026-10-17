@@ -2404,7 +2404,7 @@ body.ui-no-v3d .v3d { display: block; }
             <div class="brand-icon">FTC</div>
             <div class="brand-text">
                 <h1>Odometry Sandbox</h1>
-                <p>v27.1 · Alpha · Pontuação do jogo · IA em 3 níveis · Dois controles</p>
+                <p>v27.2 · Alpha · Pontuação do jogo · IA em 3 níveis · Dois controles</p>
             </div>
         </div>
         <nav class="header-nav app-nav" aria-label="Navegação">
@@ -2646,7 +2646,7 @@ body.ui-no-v3d .v3d { display: block; }
         <div class="status-bar">
             <div class="status-dot" id="status-dot"></div>
             <div class="status-text" id="compile-status">✅ Compilado com sucesso e rodando (Aguardando)</div>
-            <div class="status-env" data-i18n="statusEnv">Sandbox v27.1 (Monaco IDE)</div>
+            <div class="status-env" data-i18n="statusEnv">Sandbox v27.2 (Monaco IDE)</div>
         </div>
     </div>
 
@@ -2943,7 +2943,7 @@ const i18nV17 = {
     ko:["키보드와 게임패드","🎮 컨트롤러(USB 또는 블루투스)를 연결하고 아무 버튼이나 누르세요.","🎮 컨트롤러 연결됨"],
     ar:["لوحة المفاتيح وذراع التحكم","🎮 وصّل ذراع تحكم (USB أو Bluetooth) واضغط أي زر.","🎮 ذراع التحكم متصل"]
 };
-const SANDBOX_VERSION = 'v27.1';
+const SANDBOX_VERSION = 'v27.2';
 for (const l in i18nExtra) {
     Object.assign(i18n[l], i18nExtra[l]);
     I18N_V16_KEYS.forEach((k, i) => { i18n[l][k] = i18nV16Rows[l][i]; });
@@ -21784,6 +21784,79 @@ function gpaRender() {
         if (!txt) { el.innerText = L.gpNone; el.classList.remove('on'); return; }
         el.innerText = L.gpOn + ': ' + txt;
         el.classList.add('on');
+    };
+})();
+
+/* =====================================================================
+   v27.2: AS PEÇAS NÃO ENTRAM NAS PAREDES DO CAMPO
+   bbWalls segura a peça no começo de cada subpasso, mas depois dele o robô,
+   os outros robôs e as outras peças ainda a empurram — e o empurrão podia
+   pôr a peça dentro da parede (até 2,6 pol.) ou do outro lado dela. Agora,
+   no fim de cada subpasso, a peça que estava dentro do campo e abaixo da
+   borda volta para encostar na parede, sem a velocidade para fora; se um
+   robô a está prensando, ela escorrega ao longo da parede, para o lado
+   oposto ao centro do robô (e, presa num canto, o robô não avança sobre ela).
+   ===================================================================== */
+// caixas dos robôs que podem prensar a peça: o do aluno e os da partida
+function bbWallBots() {
+    const out = [];
+    if (typeof bbPose === 'function') { const p = bbPose(); out.push({ x: p.x, y: p.y, h: p.h, H: BB_BOT.half }); }
+    if (typeof mtActive === 'function' && mtActive()) for (const n of MATCH.npcs) out.push({ x: n.x, y: n.y, h: n.h, H: MT.half });
+    return out;
+}
+// quanto a peça invade a caixa do robô (0 = não encosta)
+function bbBotOverlap(b, R) {
+    const a = R.h * Math.PI / 180, c = Math.cos(a), s = Math.sin(a), dx = b.p.x - R.x, dy = b.p.y - R.y;
+    const lx = dx * c + dy * s, ly = -dx * s + dy * c;
+    if (b.p.z > BB_BOT.height + b.r) return 0;
+    const px = R.H + b.r - Math.abs(lx), py = R.H + b.r - Math.abs(ly);
+    return px > 0 && py > 0 ? Math.min(px, py) : 0;
+}
+function bbKeepInside(b, bots) {
+    if (b.st !== 'free' || b.out || b.p.z > BB_WALL_H) return;   // acima da borda, bbWalls cuida (a peça fica em cima dela ou passa por cima)
+    const lim = 72 - b.r;
+    let hit = null;
+    for (const k of ['x', 'y']) {
+        const sg = Math.sign(b.p[k]) || 1;
+        if (Math.abs(b.p[k]) > lim) {
+            b.p[k] = sg * lim;
+            if (b.v[k] * sg > 0) b.v[k] = -sg * Math.abs(b.v[k]) * 0.5;
+            b.rest = false; hit = hit ? 'corner' : k;
+        }
+    }
+    if (!hit) return;
+    // prensada por um robô contra a parede: escorrega ao longo dela, para longe do centro do robô
+    if (hit === 'corner') { b.pinned = true; return; }
+    const t = hit === 'x' ? 'y' : 'x';
+    for (const R of bots) {
+        const pen = bbBotOverlap(b, R); if (!pen) continue;
+        const dir = Math.sign(b.p[t] - R[t]) || 1;
+        b.p[t] = Math.max(-lim, Math.min(lim, b.p[t] + dir * (pen + 0.02)));
+        if (Math.abs(b.p[t]) >= lim - 1e-9) b.pinned = true;      // chegou ao canto: fica presa
+    }
+}
+(function () {
+    if (typeof bbBallsStep !== 'function') return;
+    const base = bbBallsStep;
+    bbBallsStep = function () {
+        const r = base.apply(this, arguments);
+        const bots = bbWallBots();
+        for (const b of BBG.balls) { b.pinned = false; bbKeepInside(b, bots); }
+        return r;
+    };
+    // peça presa num canto: o robô do aluno não avança sobre ela (em vez de empurrá-la para dentro da parede)
+    if (typeof isColliding !== 'function') return;
+    const ic = isColliding;
+    isColliding = function (x, y, hdg) {
+        if (ic(x, y, hdg)) return true;
+        if (typeof bbActive !== 'function' || !bbActive() || !frActive()) return false;
+        const R = { x: (x - CENTER) * IN_PER_UNIT, y: (CENTER - y) * IN_PER_UNIT, h: normDeg180(90 - hdg), H: BB_BOT.half };
+        for (const b of BBG.balls) if (b.pinned && b.st === 'free' && bbBotOverlap(b, R) > 0.05) {
+            // só bloqueia se o movimento aumenta a invasão (o robô pode recuar)
+            const cur = frWorld.pose();
+            if (bbBotOverlap(b, R) > bbBotOverlap(b, { x: cur.x, y: cur.y, h: cur.h, H: BB_BOT.half }) + 1e-6) return true;
+        }
+        return false;
     };
 })();
 </script>
