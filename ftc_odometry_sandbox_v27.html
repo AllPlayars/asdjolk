@@ -2422,7 +2422,7 @@ body.ui-no-v3d .v3d { display: block; }
             <div class="brand-icon">FTC</div>
             <div class="brand-text">
                 <h1>Odometry Sandbox</h1>
-                <p>v27.6 · Alpha · Pontuação do jogo · IA em 3 níveis · Equipes</p>
+                <p>v27.7 · Alpha · Pontuação do jogo · IA em 3 níveis · Equipes</p>
             </div>
         </div>
         <nav class="header-nav app-nav" aria-label="Navegação">
@@ -2664,7 +2664,7 @@ body.ui-no-v3d .v3d { display: block; }
         <div class="status-bar">
             <div class="status-dot" id="status-dot"></div>
             <div class="status-text" id="compile-status">✅ Compilado com sucesso e rodando (Aguardando)</div>
-            <div class="status-env" data-i18n="statusEnv">Sandbox v27.6 (Monaco IDE)</div>
+            <div class="status-env" data-i18n="statusEnv">Sandbox v27.7 (Monaco IDE)</div>
         </div>
     </div>
 
@@ -2961,7 +2961,7 @@ const i18nV17 = {
     ko:["키보드와 게임패드","🎮 컨트롤러(USB 또는 블루투스)를 연결하고 아무 버튼이나 누르세요.","🎮 컨트롤러 연결됨"],
     ar:["لوحة المفاتيح وذراع التحكم","🎮 وصّل ذراع تحكم (USB أو Bluetooth) واضغط أي زر.","🎮 ذراع التحكم متصل"]
 };
-const SANDBOX_VERSION = 'v27.6';
+const SANDBOX_VERSION = 'v27.7';
 for (const l in i18nExtra) {
     Object.assign(i18n[l], i18nExtra[l]);
     I18N_V16_KEYS.forEach((k, i) => { i18n[l][k] = i18nV16Rows[l][i]; });
@@ -4243,8 +4243,27 @@ function sandboxVisible() {
     const v = document.getElementById('view-sandbox');
     return !v || !v.hidden || (typeof frActive === 'function' && frActive());
 }
+// v27.7: relógio preciso. Antes, cada quadro da tela fazia um passo de 1/60 s: numa tela de 144 Hz a partida corria 33%
+// mais rápido que o relógio de verdade, e num computador lento (30 quadros/s) a 43% da velocidade. Agora a simulação
+// segue o relógio de verdade (performance.now) em passos fixos de 1/60 s: cada quadro faz os passos que couberem no tempo
+// que passou (0 numa tela rápida, 2 ou 3 numa lenta). Se o computador não der conta (mais de 0,1 s atrasado), o
+// atraso é descartado e contado, em vez de a simulação disparar para alcançar.
+const SIMCLK = { last: null, acc: 0, sim: 0, real: 0, lost: 0, maxSteps: 6 };
+function simStepsDue() {
+    const now = performance.now();
+    if (SIMCLK.last === null) { SIMCLK.last = now; return 1; }
+    let dt = (now - SIMCLK.last) / 1000; SIMCLK.last = now;
+    if (dt > 0.25) dt = 1 / 60;                      // a página ficou parada (aba escondida, depurador): retoma sem pular
+    SIMCLK.real += dt;
+    SIMCLK.acc += dt;
+    let n = Math.floor(SIMCLK.acc * 60 + 1e-6);
+    if (n > SIMCLK.maxSteps) { SIMCLK.lost += (n - SIMCLK.maxSteps) / 60; n = SIMCLK.maxSteps; SIMCLK.acc = 0; }
+    else SIMCLK.acc -= n / 60;
+    SIMCLK.sim += n / 60;
+    return n;
+}
 function gameLoop() {
-    if (!sandboxVisible()) { requestAnimationFrame(gameLoop); return; } // v18: pausa quando outra tela está aberta
+    if (!sandboxVisible()) { SIMCLK.last = null; requestAnimationFrame(gameLoop); return; } // v18: pausa quando outra tela está aberta
     if (!customOdometryFunction && window.editorInstance) compileEditorCode();
     pollGamepads();
     updateGamepadStatus(false);
@@ -4252,7 +4271,8 @@ function gameLoop() {
     updateStickDots();
     updateKeyLights();
 
-    if (isSandboxRunning) simulateStep();
+    if (isSandboxRunning) { const n = simStepsDue(); for (let i = 0; i < n; i++) simulateStep(); }
+    else SIMCLK.last = null;
 
     const drift = computeDrift();
     if (isSandboxRunning) {
@@ -22233,6 +22253,24 @@ function stMapPlace() {
     }
 }
 setInterval(() => { try { stMapPlace(); } catch (e) {} }, 500);
+
+/* ---------------- v27.7: indicador do relógio (Ferramentas do Sandbox) ---------------- */
+// mostra quanto tempo a simulação andou em relação ao relógio de verdade nos últimos segundos (deve ficar em 100%)
+// e quanto tempo foi descartado quando o computador não deu conta
+const SIMCLK_W = { sim: 0, real: 0, txt: '' };
+setInterval(() => {
+    try {
+        const ds = SIMCLK.sim - SIMCLK_W.sim, dr = SIMCLK.real - SIMCLK_W.real;
+        SIMCLK_W.sim = SIMCLK.sim; SIMCLK_W.real = SIMCLK.real;
+        let el = document.getElementById('simclk-info');
+        if (!el) { const box = document.getElementById('v27-mot'); if (!box) return; el = h('div', { class: 'muted v27-help', id: 'simclk-info' }); box.append(el); }
+        if (dr < 0.5) return;
+        const pct = Math.round(100 * ds / dr), lost = SIMCLK.lost;
+        const t = FRT(`⏱ Relógio da simulação: ${pct}% do relógio real nos últimos 2 s (passos de 1/60 s pelo relógio do computador)` + (lost > 0.05 ? ` · ${lost.toFixed(1).replace('.', ',')} s descartados porque o computador não deu conta` : ''),
+            `⏱ Simulation clock: ${pct}% of real time over the last 2 s (1/60 s steps driven by the computer clock)` + (lost > 0.05 ? ` · ${lost.toFixed(1)} s dropped because the computer could not keep up` : ''));
+        if (el.textContent !== t) el.textContent = t;
+    } catch (e) {}
+}, 2000);
 </script>
 </body>
 </html>
