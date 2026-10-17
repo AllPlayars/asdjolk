@@ -2435,7 +2435,7 @@ body.ui-no-v3d .v3d { display: block; }
             <div class="brand-icon">FTC</div>
             <div class="brand-text">
                 <h1>Odometry Sandbox</h1>
-                <p>v27.11 · Alpha · Pontuação do jogo · IA em 3 níveis · Equipes</p>
+                <p>v27.12 · Alpha · Pontuação do jogo · IA em 3 níveis · Equipes</p>
             </div>
         </div>
         <nav class="header-nav app-nav" aria-label="Navegação">
@@ -2677,7 +2677,7 @@ body.ui-no-v3d .v3d { display: block; }
         <div class="status-bar">
             <div class="status-dot" id="status-dot"></div>
             <div class="status-text" id="compile-status">✅ Compilado com sucesso e rodando (Aguardando)</div>
-            <div class="status-env" data-i18n="statusEnv">Sandbox v27.11 (Monaco IDE)</div>
+            <div class="status-env" data-i18n="statusEnv">Sandbox v27.12 (Monaco IDE)</div>
         </div>
     </div>
 
@@ -2974,7 +2974,7 @@ const i18nV17 = {
     ko:["키보드와 게임패드","🎮 컨트롤러(USB 또는 블루투스)를 연결하고 아무 버튼이나 누르세요.","🎮 컨트롤러 연결됨"],
     ar:["لوحة المفاتيح وذراع التحكم","🎮 وصّل ذراع تحكم (USB أو Bluetooth) واضغط أي زر.","🎮 ذراع التحكم متصل"]
 };
-const SANDBOX_VERSION = 'v27.11';
+const SANDBOX_VERSION = 'v27.12';
 for (const l in i18nExtra) {
     Object.assign(i18n[l], i18nExtra[l]);
     I18N_V16_KEYS.forEach((k, i) => { i18n[l][k] = i18nV16Rows[l][i]; });
@@ -20649,7 +20649,7 @@ function mtPlan(self, gx, gy) {
     pts.reverse();
     pts[pts.length - 1] = { x: gx, y: gy };
     // encurta por linha de visada (amostras a cada 2 pol.)
-    const clear = (a, b) => { const L = Math.hypot(b.x - a.x, b.y - a.y), k = Math.max(1, Math.ceil(L / 2)); for (let t = 1; t < k; t++) { const x = a.x + (b.x - a.x) * t / k, y = a.y + (b.y - a.y) * t / k; if (!mtClearAt(self, x, y, 9.6, others)) return false; } return true; };
+    const clear = (a, b) => { const L = Math.hypot(b.x - a.x, b.y - a.y), k = Math.max(1, Math.ceil(L / 2)); for (let t = 1; t < k; t++) { const x = a.x + (b.x - a.x) * t / k, y = a.y + (b.y - a.y) * t / k; if (!mtClearAt(self, x, y, 11.0, others)) return false; } return true; };   // v27.12: 11 pol. (antes 9,6): o canto do robô na diagonal não raspa nas pernas e nas FLOWERs
     const out = [{ x: self.x, y: self.y }];
     let i = 0;
     while (i < pts.length - 1) {
@@ -20700,7 +20700,16 @@ function mtDrive(n, dt, tvx, tvy, th) {
     // (se já estiver encostado em algo — por exemplo, empurrado pelo robô do aluno —, pode se mexer para sair)
     let moved = false;
     const tr = nx !== n.x || ny !== n.y;
-    if (mtBlocked(n, n.x, n.y, n.h)) { n.x = nx; n.y = ny; n.h = nh; moved = true; }
+    // v27.12: já encostado em algo, só pode se mover se não entrar mais fundo em nada (antes, ia para qualquer lado, e
+    // podia atravessar o robô do aluno)
+    if (mtBlocked(n, n.x, n.y, n.h)) {
+        // tenta, em ordem: andar e girar, só andar, só um eixo, só girar — o primeiro que não entra mais fundo em nada
+        const d0 = typeof mtDepth === 'function' ? mtDepth(n, n.x, n.y, n.h) : 0;
+        const opts = [[nx, ny, nh], [nx, ny, n.h], [nx, n.y, n.h], [n.x, ny, n.h], [n.x, n.y, nh]];
+        const ok = typeof mtDepth !== 'function' ? opts[0] : opts.find(([x, y, hh]) => (x !== n.x || y !== n.y || hh !== n.h) && mtDepth(n, x, y, hh) <= d0 + 1e-6);
+        if (ok) { moved = ok[0] !== n.x || ok[1] !== n.y; if (ok[0] === n.x) n.vx = 0; if (ok[1] === n.y) n.vy = 0; if (ok[2] === n.h) n.w = 0; n.x = ok[0]; n.y = ok[1]; n.h = ok[2]; }
+        else { n.vx = n.vy = 0; n.w = 0; }
+    }
     else if (!mtBlocked(n, nx, ny, nh)) { n.x = nx; n.y = ny; n.h = nh; moved = true; }
     else if (tr && !mtBlocked(n, nx, ny, n.h)) { n.x = nx; n.y = ny; n.w = 0; moved = true; }
     else if (nx !== n.x && !mtBlocked(n, nx, n.y, n.h)) { n.x = nx; n.vy = 0; n.w = 0; moved = true; }
@@ -20931,8 +20940,9 @@ function mtRunTask(n, dt) {
             if (!T.bite) { if (mtGoto(n, dt, A.sx, A.sy, A.h, 3.5, 10)) { T.bite = true; T.tb = BBG.t; } if (Math.hypot(A.sx - n.x, A.sy - n.y) < 14) n.intake = 1; }
             else {
                 n.intake = 1;
-                mtGoto(n, dt, A.fx + Math.cos(A.h * Math.PI / 180) * 2, A.fy + Math.sin(A.h * Math.PI / 180) * 2, A.h, 0.8, 8, 22);
-                if (BBG.t - T.tb > 2.5) { n.bad[b.id] = BBG.t + 6; n.task = null; }
+                // v27.12: avança um pouco mais (3,5 pol.) e desiste em 1,5 s se a peça não entrar (antes, esperava 2,5 s parado)
+                mtGoto(n, dt, A.fx + Math.cos(A.h * Math.PI / 180) * 3.5, A.fy + Math.sin(A.h * Math.PI / 180) * 3.5, A.h, 0.8, 8, 22);
+                if (BBG.t - T.tb > 1.5) { n.bad[b.id] = BBG.t + 6; n.task = null; }
             }
             if (n.stuck > 2.5) { n.bad[b.id] = BBG.t + 6; n.task = null; n.stuck = 0; }
             return;
@@ -20953,7 +20963,9 @@ function mtRunTask(n, dt) {
         }
         case 'shoot': {
             if (!n.store.length) { n.task = null; n.fly = 0; return; }
-            if (!T.spot) { T.spot = mtChooseSpot(n); if (!T.spot) { mtStop(n, dt); if (BBG.t - T.t0 > 4) n.task = null; return; } }
+            // v27.12: sem ponto livre, ela não espera parada 4 s: depois de 0,6 s esquece os pontos proibidos e tenta de novo;
+            // na terceira tentativa sem ponto, troca de tarefa
+            if (!T.spot) { T.spot = mtChooseSpot(n); if (!T.spot) { mtStop(n, dt); if (BBG.t - T.t0 > 0.6) { n.ban = {}; T.t0 = BBG.t; T.tries = (T.tries || 0) + 1; if (T.tries >= 3) n.task = null; } return; } }
             const sp = T.spot, up = Math.sign(BBG.hives[n.side].th) || 1;
             if (sp.up !== up) { n.task = null; return; }                       // a HIVE virou: escolhe outro ponto
             const W = mtSpotWin(sp); if (!W) { n.task = null; return; }
@@ -22660,6 +22672,134 @@ setInterval(() => {
         pidgDraw();
     } catch (e) {}
 }, 100);
+
+/* =====================================================================
+   v27.12: ROBÔS SEM SOBREPOSIÇÃO E IAs QUE NÃO FICAM PARADAS
+   1) Profundidade da sobreposição (teorema dos eixos separadores, com o
+      vetor de separação). Um robô que já está encostado só pode se mover
+      se não entrar mais fundo em nada; e, a cada passo, robôs que se
+      sobrepõem são separados (o da IA sai primeiro; se ele não puder, sai
+      o do aluno).
+   2) IA travada: quando ela quer andar e não sai do lugar por 0,35 s,
+      descobre o que a bloqueia. Se é outro robô, o de menor prioridade
+      desvia de lado (o seu robô tem sempre prioridade); se é a estrutura
+      ou uma FLOWER, ela contorna; e o caminho é refeito na hora. Depois
+      de 3 desvios sem progresso, a tarefa é trocada.
+   ===================================================================== */
+// sobreposição de dois polígonos convexos: { d: profundidade, x, y: direção para tirar P de Q } (ou null)
+function polyMTV(P, Q) {
+    let best = null;
+    for (const poly of [P, Q]) for (let i = 0; i < poly.length; i++) {
+        const a = poly[i], c = poly[(i + 1) % poly.length];
+        let ax = -(c.y - a.y), ay = c.x - a.x; const L = Math.hypot(ax, ay); if (L < 1e-9) continue; ax /= L; ay /= L;
+        let a0 = Infinity, a1 = -Infinity, b0 = Infinity, b1 = -Infinity;
+        for (const q of P) { const d = q.x * ax + q.y * ay; if (d < a0) a0 = d; if (d > a1) a1 = d; }
+        for (const q of Q) { const d = q.x * ax + q.y * ay; if (d < b0) b0 = d; if (d > b1) b1 = d; }
+        const o = Math.min(a1, b1) - Math.max(a0, b0);
+        if (o <= 0) return null;
+        if (!best || o < best.d) best = { d: o, x: ax, y: ay };
+    }
+    const cP = P.reduce((s, q) => ({ x: s.x + q.x / P.length, y: s.y + q.y / P.length }), { x: 0, y: 0 }), cQ = Q.reduce((s, q) => ({ x: s.x + q.x / Q.length, y: s.y + q.y / Q.length }), { x: 0, y: 0 });
+    if ((cP.x - cQ.x) * best.x + (cP.y - cQ.y) * best.y < 0) { best.x = -best.x; best.y = -best.y; }
+    return best;
+}
+// soma das profundidades de um robô da IA nessa pose (paredes, estrutura, FLOWERs, outros robôs)
+function mtDepth(self, x, y, h) {
+    const P = mtPoly(x, y, h, MT_HB);
+    let d = 0;
+    for (const q of P) d += Math.max(0, Math.abs(q.x) - 72) + Math.max(0, Math.abs(q.y) - 72);
+    for (const o of bbObstacles()) { const m = polyMTV(P, mtBox(o)); if (m) d += m.d; }
+    for (const n of MATCH.npcs) if (n !== self && Math.hypot(n.x - x, n.y - y) < 26) { const m = polyMTV(P, mtPoly(n.x, n.y, n.h, MT_HB)); if (m) d += m.d; }
+    const pp = mtPlayerPose(); if (Math.hypot(pp.x - x, pp.y - y) < 26) { const m = polyMTV(P, mtPoly(pp.x, pp.y, pp.h, MT_HB)); if (m) d += m.d; }
+    return d;
+}
+// o robô do aluno: se ele já está sobreposto a um robô da IA, pode se mover se a sobreposição diminui
+(function () {
+    const ic = isColliding;
+    isColliding = function (x, y, hdg) {
+        const hit = ic(x, y, hdg);
+        if (!hit || !mtActive() || !MATCH.npcs.length) return hit;
+        // só vale para a sobreposição com os robôs da IA: paredes e estrutura continuam bloqueando
+        const px = (x - CENTER) * IN_PER_UNIT, py = (CENTER - y) * IN_PER_UNIT, ph = normDeg180(90 - hdg), cur = mtPlayerPose();
+        const P = mtPoly(px, py, ph, 9), C = mtPoly(cur.x, cur.y, cur.h, 9);
+        let dNew = 0, dCur = 0;
+        for (const n of MATCH.npcs) { const Q = mtPoly(n.x, n.y, n.h, 9), a = polyMTV(P, Q), b = polyMTV(C, Q); dNew += a ? a.d : 0; dCur += b ? b.d : 0; }
+        if (dCur <= 0.01) return hit;                               // não estava sobreposto: o bloqueio normal vale
+        const others = (() => { const keep = MATCH.npcs; MATCH.npcs = []; try { return ic(x, y, hdg); } finally { MATCH.npcs = keep; } })();
+        return others || dNew > dCur - 1e-4;                        // sai se diminuir a sobreposição
+    };
+})();
+// separação a cada passo: o robô da IA sai do robô do aluno (e um robô da IA sai do outro)
+function mtSeparate() {
+    const pp = mtPlayerPose(), Pp = mtPoly(pp.x, pp.y, pp.h, 9);
+    const clearAt = (n, x, y) => !mtBlocked(n, x, y, n.h) || mtDepth(n, x, y, n.h) < mtDepth(n, n.x, n.y, n.h) - 1e-3;
+    for (const n of MATCH.npcs) {
+        const m = polyMTV(mtPoly(n.x, n.y, n.h, 9), Pp); if (!m || m.d < 0.02) continue;
+        const k = m.d + 0.06, nx = n.x + m.x * k, ny = n.y + m.y * k;
+        if (clearAt(n, nx, ny)) { n.x = nx; n.y = ny; n.vx = n.vy = 0; continue; }
+        // a IA não tem para onde ir: o robô do aluno sai para o outro lado
+        const ux = robotState.x - m.x * k / IN_PER_UNIT, uy = robotState.y + m.y * k / IN_PER_UNIT;
+        if (!isColliding(ux, uy, robotState.heading)) { robotState.x = ux; robotState.y = uy; }
+    }
+    for (let i = 0; i < MATCH.npcs.length; i++) for (let j = i + 1; j < MATCH.npcs.length; j++) {
+        const a = MATCH.npcs[i], b = MATCH.npcs[j];
+        const m = polyMTV(mtPoly(b.x, b.y, b.h, MT_HB), mtPoly(a.x, a.y, a.h, MT_HB)); if (!m || m.d < 0.02) continue;
+        const k = m.d + 0.06;
+        if (clearAt(b, b.x + m.x * k, b.y + m.y * k)) { b.x += m.x * k; b.y += m.y * k; }
+        else if (clearAt(a, a.x - m.x * k, a.y - m.y * k)) { a.x -= m.x * k; a.y -= m.y * k; }
+    }
+}
+// o que bloqueia o robô da IA se ele andar 1,5 pol. na direção (dx, dy)
+function mtBlocker(n, dx, dy) {
+    const L = Math.hypot(dx, dy) || 1, x = n.x + dx / L * 1.5, y = n.y + dy / L * 1.5, P = mtPoly(x, y, n.h, MT_HB);
+    if (P.some(q => Math.abs(q.x) > 72 || Math.abs(q.y) > 72)) return { k: 'wall' };
+    for (const o of bbObstacles()) if (bbPolyHit(P, mtBox(o))) return { k: 'obst', x: (o.x0 + o.x1) / 2, y: (o.y0 + o.y1) / 2 };
+    for (const m of MATCH.npcs) if (m !== n && bbPolyHit(P, mtPoly(m.x, m.y, m.h, MT_HB))) return { k: 'npc', n: m, x: m.x, y: m.y };
+    const pp = mtPlayerPose(); if (bbPolyHit(P, mtPoly(pp.x, pp.y, pp.h, MT_HB))) return { k: 'player', x: pp.x, y: pp.y };
+    return null;
+}
+(function () {
+    const dv = mtDrive;
+    mtDrive = function (n, dt, tvx, tvy, th) {
+        const x0 = n.x, y0 = n.y, h0 = n.h, want = Math.hypot(tvx, tvy), herr = th === null || th === undefined ? 0 : Math.abs(mtNorm(th - n.h));
+        // desvio em andamento: anda de lado por um tempo curto, e o caminho é refeito
+        if (n.evade && BBG.t < n.evade.until) { tvx = n.evade.vx; tvy = n.evade.vy; th = null; }
+        else if (n.evade) { n.evade = null; n.pathT = 0; n.path = null; }
+        const r = dv.call(this, n, dt, tvx, tvy, th);
+        if (n.evade) return r;
+        const movedD = Math.hypot(n.x - x0, n.y - y0);
+        // travado: quer andar e não anda, ou quer girar e não gira (girar perto da parede é o que mais trava)
+        const rotStuck = herr > 4 && Math.abs(mtNorm(n.h - h0)) < 0.2 && movedD < 0.05;
+        if ((want > 3 && movedD < want * dt * 0.25) || rotStuck) n.blockT = (n.blockT || 0) + dt; else n.blockT = Math.max(0, (n.blockT || 0) - dt * 2);
+        if (n.blockT > 0.35) {
+            n.blockT = 0;
+            let B = want > 3 ? mtBlocker(n, tvx, tvy) : null;
+            if (!B && rotStuck) {
+                // o giro bate em quê? afasta do que estiver mais perto: a parede (na direção do centro) ou o obstáculo
+                const P = mtPoly(n.x, n.y, n.h + Math.sign(mtNorm(th - n.h)) * 5, MT_HB);
+                if (P.some(q => Math.abs(q.x) > 72 || Math.abs(q.y) > 72)) { const ex = 72 - Math.abs(n.x) < 72 - Math.abs(n.y) ? -Math.sign(n.x) : 0, ey = ex ? 0 : -Math.sign(n.y); n.evade = { vx: ex * 14, vy: ey * 14, until: BBG.t + 0.35 }; n.pathT = 0; return r; }
+                B = mtBlocker(n, Math.cos(n.h * Math.PI / 180), Math.sin(n.h * Math.PI / 180)) || { k: 'obst', x: n.x + Math.cos(n.h * Math.PI / 180), y: n.y + Math.sin(n.h * Math.PI / 180) };
+                tvx = n.x - B.x; tvy = n.y - B.y;   // "para longe" do que bloqueia
+            }
+            // entre dois robôs da IA, só o de menor prioridade desvia (o que não está atirando, ou o de id maior)
+            if (B && B.k === 'npc') { const o = B.n, oShoot = o.task && o.task.k === 'shoot' && o.task.at; if (!oShoot && n.id < o.id && !(n.task && n.task.k === 'shoot' && n.task.at)) { o.blockT = 0.36; return r; } }
+            if (B && B.k !== 'wall') {
+                // de lado, para o lado que estiver livre (perpendicular à direção que ele queria ir, afastando do bloqueio)
+                const L = Math.hypot(tvx, tvy) || 1, px = -tvy / L, py = tvx / L;
+                const side = ((B.x - n.x) * px + (B.y - n.y) * py) > 0 ? -1 : 1;
+                const sp = Math.min(mtLv(n).vmax, 18), cand = [[px * side, py * side], [-px * side, -py * side], [-tvx / L, -tvy / L]];
+                const ok = cand.find(([ex, ey]) => !mtBlocked(n, n.x + ex * 6, n.y + ey * 6, n.h)) || cand[2];
+                n.evade = { vx: ok[0] * sp, vy: ok[1] * sp, until: BBG.t + 0.5 };
+                n.evadeN = (n.evadeN || 0) + 1; n.pathT = 0;
+                if (n.evadeN >= 3 && n.task && n.task.k !== 'park') { if (n.task.b) n.bad[n.task.b.id] = BBG.t + 6; if (n.task.spot) n.ban[n.task.spot.x + ',' + n.task.spot.y] = BBG.t + 8; n.task = null; n.evadeN = 0; }
+            }
+        }
+        if (movedD > 0.5) n.evadeN = Math.max(0, (n.evadeN || 0) - dt);
+        return r;
+    };
+    const st = mtStep;
+    mtStep = function () { const r = st.apply(this, arguments); try { if (mtActive() && MATCH.npcs.length) mtSeparate(); } catch (e) { if (!MATCH.sepErr) { MATCH.sepErr = true; console.warn('separação:', e); } } return r; };
+})();
 </script>
 </body>
 </html>
