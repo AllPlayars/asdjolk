@@ -2426,6 +2426,15 @@ body.ui-no-v3d .v3d { display: block; }
 .pidg { margin-top: 12px; display: flex; flex-direction: column; gap: 6px; }
 .pidg[hidden] { display: none; }
 #pidg-cv { width: 100%; height: auto; border: 1px solid var(--border, #444); border-radius: 8px; background: var(--surf-2, transparent); }
+.fr-hwv.pod.unk { background: #9e9e9e; border: 1px dashed #333; border-radius: 50%; }
+.fr-hwv.pod.unk::after { content: '?'; position: absolute; inset: 0; font: bold 8px/10px sans-serif; text-align: center; color: #000; }
+.fr-mnt { margin-top: 12px; padding: 10px; border: 1px solid var(--border); border-radius: 8px; background: var(--surf-2); }
+.fr-mnt h4 { margin: 0 0 6px; }
+.fr-mnt-row { display: grid; grid-template-columns: 1fr 90px auto; gap: 6px; align-items: center; margin: 4px 0; font-size: 12px; }
+.fr-mnt-row input { font: inherit; padding: 3px 6px; border-radius: 6px; border: 1px solid var(--border); background: var(--surf-1); color: var(--text); min-width: 0; }
+.fr-mnt-btns { display: flex; flex-wrap: wrap; gap: 6px; margin: 8px 0; }
+.fr-mnt-res .ok { color: #2e7d32; } .fr-mnt-res .bad { color: #c62828; }
+.fr-mnt-hint { font-size: 12px; line-height: 1.45; } .fr-mnt-rev { font-size: 12px; font-weight: 600; }
     </style>
 </head>
 <body>
@@ -2435,7 +2444,7 @@ body.ui-no-v3d .v3d { display: block; }
             <div class="brand-icon">FTC</div>
             <div class="brand-text">
                 <h1>Odometry Sandbox</h1>
-                <p>v27.12 · Alpha · Pontuação do jogo · IA em 3 níveis · Equipes</p>
+                <p>v27.13 · Alpha · Pontuação do jogo · IA em 3 níveis · Equipes</p>
             </div>
         </div>
         <nav class="header-nav app-nav" aria-label="Navegação">
@@ -2677,7 +2686,7 @@ body.ui-no-v3d .v3d { display: block; }
         <div class="status-bar">
             <div class="status-dot" id="status-dot"></div>
             <div class="status-text" id="compile-status">✅ Compilado com sucesso e rodando (Aguardando)</div>
-            <div class="status-env" data-i18n="statusEnv">Sandbox v27.12 (Monaco IDE)</div>
+            <div class="status-env" data-i18n="statusEnv">Sandbox v27.13 (Monaco IDE)</div>
         </div>
     </div>
 
@@ -2974,7 +2983,7 @@ const i18nV17 = {
     ko:["키보드와 게임패드","🎮 컨트롤러(USB 또는 블루투스)를 연결하고 아무 버튼이나 누르세요.","🎮 컨트롤러 연결됨"],
     ar:["لوحة المفاتيح وذراع التحكم","🎮 وصّل ذراع تحكم (USB أو Bluetooth) واضغط أي زر.","🎮 ذراع التحكم متصل"]
 };
-const SANDBOX_VERSION = 'v27.12';
+const SANDBOX_VERSION = 'v27.13';
 for (const l in i18nExtra) {
     Object.assign(i18n[l], i18nExtra[l]);
     I18N_V16_KEYS.forEach((k, i) => { i18n[l][k] = i18nV16Rows[l][i]; });
@@ -13238,8 +13247,8 @@ function frRobotSheetEl() {
             h('tr', {}, h('td', { text: 'I2C Bus 0' }), h('td', { text: FRT('IMU interna do Control Hub', 'Control Hub internal IMU') })),
             !frSens() || frHas.c270() ? h('tr', {}, h('td', { text: 'USB' }), h('td', { text: FRT('Logitech C270 (campo de visão de 70°). Posição e ângulos (6 DOF) na Vista 3D: agora ' + frMountTxt('c270'), 'Logitech C270 (70° field of view). Position and angles (6 DOF) in the 3D view: now ' + frMountTxt('c270')) })) : null,
             frSens() && frHas.ll() ? h('tr', {}, h('td', { text: 'USB' }), h('td', { text: FRT('Limelight 3A (54,5° × 42°); pipeline 0 = AprilTags 36h11 com o mapa do campo (MegaTag ativado). Posição e ângulos (6 DOF) na Vista 3D: agora ' + frMountTxt('ll'), 'Limelight 3A (54.5° × 42°); pipeline 0 = AprilTags 36h11 with the field map (MegaTag enabled). Position and angles (6 DOF) in the 3D view: now ' + frMountTxt('ll')) })) : null,
-            frSens() && frHas.pinpoint() ? h('tr', {}, h('td', { text: 'I2C Bus 1' }), h('td', { text: FRT('goBILDA Pinpoint V2. Pod X (mede para a frente): 84 mm à DIREITA do centro. Pod Y (mede para o lado): 168 mm ATRÁS do centro, montado invertido (a contagem bruta diminui quando o robô vai para a esquerda).', 'goBILDA Pinpoint V2. X pod (measures forward): 84 mm to the RIGHT of center. Y pod (measures sideways): 168 mm BEHIND center, mounted reversed (the raw count decreases when the robot moves left).') })) : null,
-            frSens() && frHas.pods() ? h('tr', {}, h('td', { text: 'Expansion Hub 2' }), h('td', { text: FRT('Encoders dos pods nas portas de motor (sem motor ligado): porta 0 = par0, paralelo, 152,4 mm à esquerda; porta 1 = par1, paralelo, 152,4 mm à direita, montado espelhado (conta negativo para a frente); porta 2 = perp, perpendicular, 139,7 mm atrás (positivo para a esquerda).', 'Pod encoders on the motor ports (no motor attached): port 0 = par0, parallel, 152.4 mm left; port 1 = par1, parallel, 152.4 mm right, mounted mirrored (counts negative going forward); port 2 = perp, perpendicular, 139.7 mm behind (positive to the left).') })) : null,
+            frSens() && frHas.pinpoint() ? h('tr', {}, h('td', { text: 'I2C Bus 1' }), h('td', { text: frMntDesc('pinpoint') })) : null,
+            frSens() && frHas.pods() ? h('tr', {}, h('td', { text: 'Expansion Hub 2' }), h('td', { text: frMntDesc('pods') })) : null,
             ...(typeof bbActive === 'function' && F3.fieldFor.completo === 'biobuzz' ? frBioRows() : []),
             frSens() && FR_HW.odo !== 'none' ? h('tr', {}, h('td', { text: 'Pods' }), h('td', { text: FR_HW.pod === '4bar' ? FRT('goBILDA 4-Bar: roda de 32 mm, 2000 ticks por volta = 19,894 ticks/mm', 'goBILDA 4-Bar: 32 mm wheel, 2000 ticks per rev = 19.894 ticks/mm') : FRT('goBILDA Swingarm: roda de 48 mm, 2000 ticks por volta = 13,263 ticks/mm', 'goBILDA Swingarm: 48 mm wheel, 2000 ticks per rev = 13.263 ticks/mm') })) : null),
         h('ul', {},
@@ -22799,6 +22808,164 @@ function mtBlocker(n, dx, dy) {
     };
     const st = mtStep;
     mtStep = function () { const r = st.apply(this, arguments); try { if (mtActive() && MATCH.npcs.length) mtSeparate(); } catch (e) { if (!MATCH.sepErr) { MATCH.sepErr = true; console.warn('separação:', e); } } return r; };
+})();
+
+/* =====================================================================
+   v27.13: MONTAGEM DOS PODS (POSIÇÃO FÍSICA) E DESAFIO DO OFFSET
+   Na montagem do robô, a posição física dos pods pode ser:
+   - padrão (a de sempre: pod X 84 mm à direita, pod Y 168 mm atrás;
+     par0/par1 a 152,4 mm, perp 139,7 mm atrás);
+   - personalizada (você digita as posições, como no seu robô real);
+   - aleatória (oculta): o Sandbox sorteia posições que você não vê.
+     O seu código precisa medir esses offsets (girando o robô no lugar)
+     e você confere a medida no painel "Montagem dos pods".
+   ===================================================================== */
+const FR_MNT_STD = { xy: -84, yx: -168, p0: 152.4, p1: -152.4, px: -139.7 };   // pinX.y, pinY.x, E0.y, E1.y, E2.x (mm)
+const FR_MNT_TOL = 2;   // mm: tolerância para a medida ser aceita
+function frMntRandom() {
+    const r = (a, b) => Math.round((a + Math.random() * (b - a)) * 10) / 10;
+    const sg = () => Math.random() < 0.5 ? -1 : 1;
+    return { xy: sg() * r(20, 190), yx: sg() * r(20, 200), p0: r(90, 200), p1: -r(90, 200), px: sg() * r(30, 200) };
+}
+function frMntGeo(hw) {
+    hw = hw || FR_HW;
+    const m = hw.mnt || 'std';
+    if (m === 'random') { if (!hw.rnd) hw.rnd = frMntRandom(); return hw.rnd; }
+    if (m === 'custom') return Object.assign({}, FR_MNT_STD, hw.geo || {});
+    return FR_MNT_STD;
+}
+function frApplyMount() {
+    const g = frMntGeo();
+    FR_PODS_GEOM.pinX.y = g.xy; FR_PODS_GEOM.pinY.x = g.yx;
+    FR_PODS_GEOM.E0.y = g.p0; FR_PODS_GEOM.E1.y = g.p1; FR_PODS_GEOM.E2.x = g.px;
+}
+const frMntHidden = () => FR_HW.odo !== 'none' && FR_HW.mnt === 'random' && !FR_HW.shown;
+(function () {
+    const base = frSetHardware;
+    frSetHardware = function (hw) {
+        if (hw && hw.mnt === 'random' && !hw.rnd) hw.rnd = frMntRandom();
+        base(hw);
+        frApplyMount();
+    };
+    frApplyMount();
+})();
+// texto da ficha do robô: onde os pods estão (ou "oculto")
+function frMntSide(v, a, b) { return Math.abs(v).toFixed(1).replace('.', frLangPt() ? ',' : '.') + ' mm ' + (v >= 0 ? a : b); }
+function frMntDesc(kind) {
+    const pt = frLangPt(), g = frMntGeo();
+    const hid = frMntHidden();
+    const q = FRT('posição oculta (montagem aleatória): meça com o seu código', 'hidden position (random mount): measure it with your code');
+    if (kind === 'pinpoint') {
+        const x = hid ? q : frMntSide(g.xy, FRT('à ESQUERDA do centro', 'to the LEFT of center'), FRT('à DIREITA do centro', 'to the RIGHT of center'));
+        const y = hid ? q : frMntSide(g.yx, FRT('À FRENTE do centro', 'AHEAD of center'), FRT('ATRÁS do centro', 'BEHIND center'));
+        return pt ? `goBILDA Pinpoint V2. Pod X (mede para a frente): ${x}. Pod Y (mede para o lado): ${y}, montado invertido (a contagem bruta diminui quando o robô vai para a esquerda).`
+            : `goBILDA Pinpoint V2. X pod (measures forward): ${x}. Y pod (measures sideways): ${y}, mounted reversed (the raw count decreases when the robot moves left).`;
+    }
+    const p0 = hid ? q : frMntSide(g.p0, FRT('à esquerda', 'left'), FRT('à direita', 'right'));
+    const p1 = hid ? q : frMntSide(g.p1, FRT('à esquerda', 'left'), FRT('à direita', 'right'));
+    const px = hid ? q : frMntSide(g.px, FRT('à frente', 'ahead'), FRT('atrás', 'behind'));
+    return pt ? `Encoders dos pods nas portas de motor (sem motor ligado): porta 0 = par0, paralelo, ${p0}; porta 1 = par1, paralelo, ${p1}, montado espelhado (conta negativo para a frente); porta 2 = perp, perpendicular, ${px} (positivo para a esquerda).`
+        : `Pod encoders on the motor ports (no motor attached): port 0 = par0, parallel, ${p0}; port 1 = par1, parallel, ${p1}, mounted mirrored (counts negative going forward); port 2 = perp, perpendicular, ${px} (positive to the left).`;
+}
+// seletor "Montagem dos pods" junto dos outros da montagem
+(function () {
+    const base = frHwSelectors;
+    frHwSelectors = function () {
+        const el = base.apply(this, arguments);
+        const hw = FRS.hw;
+        if (!hw) return el;
+        el.append(h('label', { class: 'fr-chk' }, FRT('Posição dos pods ', 'Pod position '), h('select', { 'data-hw': 'mnt', onchange: e => {
+            if (FR_RUN) { e.target.value = hw.mnt || 'std'; toast(FRT('Pare o OpMode antes de mudar a montagem', 'Stop the OpMode before changing the assembly')); return; }
+            hw.mnt = e.target.value; if (hw.mnt === 'random') { hw.rnd = frMntRandom(); hw.shown = false; }
+            FRS.save(); frSetHardware(hw); frRobotVisualHw(); frSideTab('robot');
+            if (hw.mnt === 'random') toast(FRT('Pods montados em posições sorteadas e ocultas: meça os offsets com o seu código', 'Pods mounted at random, hidden positions: measure the offsets with your code'));
+        } }, ...[['std', FRT('padrão', 'standard')], ['custom', FRT('personalizada', 'custom')], ['random', FRT('aleatória (oculta)', 'random (hidden)')]].map(([v, t]) => h('option', { value: v, text: t, selected: (hw.mnt || 'std') === v ? true : null })))));
+        return el;
+    };
+})();
+// desenho no robô: na posição física (ou "?" quando oculta)
+(function () {
+    frRobotVisualHw = function () {
+        robot.querySelectorAll('.fr-hwv').forEach(e => e.remove());
+        if (!frSens()) return;
+        const mmPx = 75 / 457.2, c = v => Math.max(-215, Math.min(215, v));
+        const add = (cls, xmm, ymm, w, hgt, title) => { const el = h('div', { class: 'fr-hwv ' + cls, title }); Object.assign(el.style, { left: (37.5 - c(ymm) * mmPx - w / 2) + 'px', top: (37.5 - c(xmm) * mmPx - hgt / 2) + 'px', width: w + 'px', height: hgt + 'px' }); robot.append(el); return el; };
+        const g = frMntGeo(), hid = frMntHidden();
+        if (frHas.pinpoint()) {
+            if (hid) add('pod unk', -12, 0, 10, 10, FRT('pods: posição oculta', 'pods: hidden position'));
+            else { add('pod', 0, g.xy, 4, 9, 'pod X'); add('pod', g.yx, 0, 9, 4, 'pod Y'); }
+            add('pp', 10, 0, 10, 8, 'Pinpoint V2').id = 'fr-pp-led';
+        }
+        if (frHas.pods()) {
+            if (hid) add('pod unk', -12, 0, 10, 10, FRT('pods: posição oculta', 'pods: hidden position'));
+            else { add('pod', 0, g.p0, 4, 9, 'par0'); add('pod', 0, g.p1, 4, 9, 'par1'); add('pod', g.px, 0, 9, 4, 'perp'); }
+        }
+        if (frHas.ll()) add('ll', 200, frHas.c270() ? 40 : 0, 9, 6, 'Limelight 3A');
+    };
+    frRobotVisualHw();
+})();
+// painel na ficha do robô: posições personalizadas, ou conferir a medida da montagem aleatória
+function frMntPanelEl() {
+    const hw = FRS.hw || {}, m = hw.mnt || 'std', pp = frHas.pinpoint();
+    const fmt = v => (Math.round(v * 10) / 10).toFixed(1);
+    const fmtL = v => frLangPt() ? fmt(v).replace('.', ',') : fmt(v);
+    const keys = pp ? [['xy', FRT('Pod X: deslocamento lateral (esquerda +)', 'X pod: sideways offset (left +)'), 'setOffsets x'], ['yx', FRT('Pod Y: deslocamento para a frente (frente +)', 'Y pod: forward offset (forward +)'), 'setOffsets y']]
+        : [['p0', FRT('par0: posição lateral (esquerda +)', 'par0: sideways position (left +)'), 'y'], ['p1', FRT('par1: posição lateral (esquerda +)', 'par1: sideways position (left +)'), 'y'], ['px', FRT('perp: posição para a frente (frente +)', 'perp: forward position (forward +)'), 'x']];
+    const box = h('div', { class: 'fr-mnt' }, h('h4', { text: FRT('Montagem dos pods', 'Pod mounting') }));
+    if (m === 'std') {
+        box.append(h('p', { text: FRT('Posição padrão. Em "Posição dos pods" (montagem do robô), escolha "personalizada" para digitar as posições do seu robô real, ou "aleatória (oculta)" para o desafio de medir o offset.', 'Standard position. In "Pod position" (robot assembly), choose "custom" to type the positions of your real robot, or "random (hidden)" for the offset-measuring challenge.') }));
+        return box;
+    }
+    if (m === 'custom') {
+        box.append(h('p', { text: FRT('Digite onde os pods estão no seu robô (mm, a partir do centro de rotação; robô: x = frente, y = esquerda). No código, use os mesmos valores (no Pinpoint, em setOffsets).', 'Type where the pods are on your robot (mm, from the center of rotation; robot: x = forward, y = left). Use the same values in your code (on the Pinpoint, in setOffsets).') }));
+        const g = frMntGeo();
+        for (const [k, lbl] of keys) box.append(h('label', { class: 'fr-mnt-row' }, h('span', { text: lbl }), h('input', { type: 'number', step: '0.1', min: '-228', max: '228', value: fmt(g[k]), onchange: e => {
+            if (FR_RUN) { e.target.value = fmt(frMntGeo()[k]); toast(FRT('Pare o OpMode antes de mudar a montagem', 'Stop the OpMode before changing the assembly')); return; }
+            const v = Math.max(-228, Math.min(228, parseFloat(e.target.value)));
+            if (!isFinite(v)) { e.target.value = fmt(frMntGeo()[k]); return; }
+            hw.geo = Object.assign({}, hw.geo || {}, { [k]: v }); FRS.save(); frSetHardware(hw); frRobotVisualHw();
+        } }), h('span', { text: 'mm' })));
+        box.append(h('button', { class: 'btn', text: FRT('Voltar ao padrão', 'Back to standard'), onclick: () => { if (FR_RUN) return; hw.geo = Object.assign({}, FR_MNT_STD); FRS.save(); frSetHardware(hw); frRobotVisualHw(); frSideTab('robot'); } }));
+        return box;
+    }
+    // aleatória
+    box.append(h('p', { text: FRT('Os pods foram montados em posições sorteadas que você não vê. Com o offset errado, a odometria erra quando o robô gira. Escreva um OpMode que meça os offsets e digite aqui o resultado para conferir (tolerância ±' + FR_MNT_TOL + ' mm).', 'The pods were mounted at random positions you cannot see. With the wrong offset, odometry drifts when the robot turns. Write an OpMode that measures the offsets and type the result here to check it (tolerance ±' + FR_MNT_TOL + ' mm).') }));
+    const ins = {}, res = h('div', { class: 'fr-mnt-res' });
+    for (const [k, lbl] of keys) { ins[k] = h('input', { type: 'number', step: '0.1', placeholder: '?' }); box.append(h('label', { class: 'fr-mnt-row' }, h('span', { text: lbl }), ins[k], h('span', { text: 'mm' }))); }
+    const check = () => {
+        const g = frMntGeo(); res.innerHTML = ''; let ok = 0, n = 0;
+        for (const [k, lbl] of keys) {
+            const v = parseFloat(ins[k].value); if (!isFinite(v)) continue; n++;
+            const err = v - g[k], good = Math.abs(err) <= FR_MNT_TOL; if (good) ok++;
+            res.append(h('div', { class: good ? 'ok' : 'bad', text: (good ? '✓ ' : '✗ ') + lbl + ': ' + (good ? FRT('certo', 'correct') + ' (' + FRT('erro ', 'error ') + fmtL(Math.abs(err)) + ' mm)' : (Math.abs(err) > 10 ? FRT('longe', 'far off') : FRT('perto', 'close')) + (hw.shown ? ' (' + FRT('real ', 'actual ') + fmtL(g[k]) + ' mm)' : '')) }));
+        }
+        if (!n) { res.append(h('div', { text: FRT('Digite pelo menos uma medida.', 'Type at least one measurement.') })); return; }
+        if (ok === keys.length) { res.append(h('div', { class: 'ok', text: FRT('Todos os offsets medidos corretamente!', 'All offsets measured correctly!') })); toast(FRT('Offsets corretos!', 'Offsets correct!')); }
+    };
+    const btns = h('div', { class: 'fr-mnt-btns' },
+        h('button', { class: 'btn primary', text: FRT('Conferir', 'Check'), onclick: check }),
+        pp ? h('button', { class: 'btn', text: FRT('Usar o setOffsets do código', 'Use the code\'s setOffsets'), title: FRT('Copia os valores que o seu programa passou para setOffsets na última execução', 'Copies the values your program passed to setOffsets in the last run'), onclick: () => { if (!FR_PP) return; ins.xy.value = fmt(FR_PP.offX); ins.yx.value = fmt(FR_PP.offY); check(); } }) : null,
+        h('button', { class: 'btn', text: FRT('Dica', 'Hint'), onclick: () => hint.hidden = !hint.hidden }),
+        h('button', { class: 'btn', text: hw.shown ? FRT('Ocultar de novo', 'Hide again') : FRT('Revelar', 'Reveal'), onclick: () => { hw.shown = !hw.shown; FR_HW.shown = hw.shown; FRS.save(); frRobotVisualHw(); frSideTab('robot'); } }),
+        h('button', { class: 'btn', text: FRT('Sortear de novo', 'New random mount'), onclick: () => { if (FR_RUN) { toast(FRT('Pare o OpMode antes de mudar a montagem', 'Stop the OpMode before changing the assembly')); return; } hw.rnd = frMntRandom(); hw.shown = false; FRS.save(); frSetHardware(hw); frRobotVisualHw(); frSideTab('robot'); } }));
+    const hint = h('div', { class: 'fr-mnt-hint', hidden: true });
+    hint.innerHTML = pp ? FRT(
+        '<p>Gire o robô <b>no lugar</b> (sem andar), algumas voltas. Um pod a <i>d</i> mm do centro de rotação percorre <i>d</i> · Δθ ao longo da roda, mesmo sem o robô sair do lugar.</p><p>Leia as contagens brutas (<code>getEncoderX()</code>, <code>getEncoderY()</code>) e o ângulo sem normalizar (<code>getHeading(UnnormalizedAngleUnit.RADIANS)</code>) antes e depois. Converta ticks em mm com a resolução do pod (veja a ficha) e divida pelo Δθ em radianos. Atenção aos sinais: veja na ficha para que lado cada pod conta.</p><p>Gire devagar, para um lado e depois para o outro, e tire a média: assim o pouco que o robô anda enquanto gira se cancela.</p><p>Depois, passe as medidas para <code>setOffsets</code> e confira girando de novo: a posição não deve mudar. Lembre que o pod Y está montado invertido (<code>setEncoderDirections</code>).</p>',
+        '<p>Spin the robot <b>in place</b> (without driving), a few turns. A pod <i>d</i> mm from the center of rotation travels <i>d</i> · Δθ along its wheel, even though the robot stays put.</p><p>Read the raw counts (<code>getEncoderX()</code>, <code>getEncoderY()</code>) and the unnormalized angle (<code>getHeading(UnnormalizedAngleUnit.RADIANS)</code>) before and after. Convert ticks to mm with the pod resolution (see the sheet) and divide by Δθ in radians. Watch the signs: the sheet says which way each pod counts.</p><p>Spin slowly, one way and then the other, and average: the little the robot drifts while spinning cancels out.</p><p>Then pass the measurements to <code>setOffsets</code> and check by spinning again: the position should not change. Remember the Y pod is mounted reversed (<code>setEncoderDirections</code>).</p>')
+        : FRT(
+        '<p>Gire o robô <b>no lugar</b> algumas voltas. Cada pod a <i>d</i> mm do centro percorre <i>d</i> · Δθ ao longo da roda. Leia os encoders de par0, par1 e perp (<code>getCurrentPosition()</code>) e o ângulo pela IMU do Control Hub, somando as variações a cada volta do laço (a IMU volta para −180° depois de +180°).</p><p>Converta ticks em mm com a resolução do pod e divida pelo Δθ em radianos. Atenção aos sinais: par1 está espelhado.</p>',
+        '<p>Spin the robot <b>in place</b> a few turns. Each pod <i>d</i> mm from the center travels <i>d</i> · Δθ along its wheel. Read the par0, par1 and perp encoders (<code>getCurrentPosition()</code>) and the angle from the Control Hub IMU, adding up the changes every loop (the IMU wraps to −180° after +180°).</p><p>Convert ticks to mm with the pod resolution and divide by Δθ in radians. Watch the signs: par1 is mirrored.</p>');
+    box.append(btns, res, hint);
+    if (hw.shown) { const g = frMntGeo(); box.append(h('p', { class: 'fr-mnt-rev', text: FRT('Posições reais: ', 'Actual positions: ') + keys.map(([k, , n]) => n + ' = ' + fmtL(g[k]) + ' mm').join(' · ') })); }
+    return box;
+}
+(function () {
+    const base = frRobotSheetEl;
+    frRobotSheetEl = function () {
+        const el = base.apply(this, arguments);
+        try { if (frSens() && FR_HW.odo !== 'none') el.append(frMntPanelEl()); } catch (e) { console.warn('montagem dos pods:', e); }
+        return el;
+    };
 })();
 </script>
 </body>
