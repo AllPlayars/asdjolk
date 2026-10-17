@@ -17027,7 +17027,7 @@ const BB_BOT = {
     turretRange: 360, turretSpeed: 400                       // v27: torreta de 360° (±180°), com batente nas pontas (não dá a volta)
 };
 const BBG = {
-    opts: { shooter: 'turret', stype: 'hood', flower: 'full', preload: 2, start: 'hive' },
+    opts: { shooter: 'turret', stype: 'hood', flower: 'full', preload: 2, start: 'hive', intake4: true },   // v27.1: intake4 = o intake empurra a fila (4 peças sem o midtake)
     balls: [], flowers: [[], [], [], []], hives: { red: { th: -30, w: 0 }, blue: { th: 30, w: 0 } },
     mech: null, t: 0, shots: 0, tips: 0, prevPose: null, robotV: { x: 0, y: 0 }, lastEvent: '',
     load() { try { const o = JSON.parse(localStorage.getItem(BBG_KEY) || '{}'); if (o.opts) { if (o.opts.hood && !o.opts.stype) o.opts.stype = o.opts.hood; delete o.opts.hood; Object.assign(this.opts, o.opts); } } catch (e) {} bbOptsFix(this.opts); },
@@ -17385,7 +17385,8 @@ function bbMechStep(dt, pose) {
     // v27.1: com o intake puxando, a peça de trás empurra as da frente (encostadas, a 0,3 uma da outra), mesmo com a
     // esteira parada — assim cabem as 4 peças (antes, sem o midtake, a segunda ficava na boca e a terceira não entrava).
     // Sem a esteira, a da frente para logo antes do lançador (0,97): só o midtake a coloca nele.
-    if (M.intake > 0.3 && st.length) {
+    // (opção "Intake com o midtake parado" na coluna Robô: desligada, volta ao comportamento antigo, de 2 peças)
+    if (BBG.opts.intake4 !== false && M.intake > 0.3 && st.length) {
         const n = st.length, rear = st[n - 1], top = M.mid > 0.2 ? 1 : 0.97;
         let want = rear.q < 0.35 ? Math.min(0.35, rear.q + 1.0 * dt) : rear.q;
         want = Math.min(want, top - 0.3 * (n - 1));
@@ -19091,6 +19092,12 @@ function v3dBuild() {
                 BBG.opts.stype = e.target.value; bbOptsFix(); BBG.save(); bbReset(); v3dSync(); v3dRender();
             } }, ...BB_STYPES.map(k => h('option', { value: k, text: v3t('st_' + k) })))),
             h('label', { class: 'v3d-chk' }, v3t('preload') + ': ', preSel),
+            // v27.1: com o midtake parado, o intake só leva 2 peças (como até a v27.0) ou empurra a fila inteira (4 peças)
+            h('label', { class: 'v3d-chk v3d-startl', title: FRT('Com o midtake parado, o intake empurra só a peça da boca (cabem 2 peças) ou a fila inteira, como no robô real (cabem 4). Com o midtake girando, cabem 4 nos dois casos.', 'With the midtake stopped, the intake pushes only the piece at its mouth (2 pieces fit) or the whole queue, as on the real robot (4 fit). With the midtake running, 4 fit either way.') },
+                FRT('Intake com o midtake parado', 'Intake with the midtake stopped') + ': ',
+                h('select', { class: 'v3d-pre v3d-i4', onchange: e => { BBG.opts.intake4 = e.target.value === '4'; BBG.save(); } },
+                    h('option', { value: '4', text: FRT('empurra a fila (4 peças)', 'pushes the queue (4 pieces)') }),
+                    h('option', { value: '2', text: FRT('só 2 peças (como antes)', 'only 2 pieces (as before)') }))),
             h('button', { class: 'btn small v3d-example', text: v3t('example'), onclick: () => bbLoadExample() })));
     const arenaCol = h('div', { class: 'v3d-cfgc v3d-cfg-arena' },
         h('div', { class: 'v3d-sec', text: '🏟 ' + FRT('Arena', 'Arena') }),
@@ -19197,6 +19204,7 @@ function v3dSync() {
         el.querySelectorAll('.v3d-gopt[data-opt="shooter"] [data-v="turret"], .v3d-gopt[data-opt="shooter"] [data-v="fixed"]').forEach(b => { b.disabled = BBG.opts.stype === 'disc'; b.title = b.disabled ? v3t('discNote') : ''; });
         el.querySelectorAll('.v3d-stype').forEach(x => { if (x.value !== BBG.opts.stype) x.value = BBG.opts.stype; });
         const pre = el.querySelector('.v3d-pre'); if (pre) pre.value = BBG.opts.preload;
+        const i4 = el.querySelector('.v3d-i4'); if (i4) i4.value = BBG.opts.intake4 === false ? '2' : '4';
         const st = el.querySelector('.v3d-start'); if (st) st.value = BBG.opts.start;
         const ex = el.querySelector('.v3d-example'); if (ex) ex.hidden = !full;
         const mp = el.querySelector('.mt-panel'); if (mp) { mp.hidden = !full || F3.field() !== 'biobuzz'; if (typeof mtSyncPanel === 'function') mtSyncPanel(); }
@@ -21111,7 +21119,7 @@ function mtUpdateUI() {
    os ícones (o nome aparece ao passar o mouse); no celular, vai para o
    pé da tela.
    - completo: Driver Hub e arena · vista 3D, arena e robô · código ·
-     teste de mesa · ferramentas do Sandbox (e calibração) · missões
+     teste de mesa · ferramentas do Sandbox · calibração do lançador (v27.1) · missões
    - pontual: arena e configurações · (modelo de visão: arena 3D e jogo) ·
      código · teste de mesa
    ===================================================================== */
@@ -21125,6 +21133,7 @@ function sbnTargets() {
         ['⌨️', T('Código', 'Code'), () => vis('#view-robot .fr-ide')],
         ['🐞', T('Teste de mesa', 'Desk check'), () => vis('#fr-dbg-slot .dbg-panel') || vis('#fr-dbg-slot')],
         ['🧰', T('Ferramentas do Sandbox', 'Sandbox tools'), () => vis('#view-robot .fr-sandbox')],
+        ['📐', T('Calibração do lançador', 'Shooter calibration'), () => vis('#view-robot #cal-panel')],   // v27.1 (só no campo BIOBUZZ)
         ['🎯', T('Missões', 'Missions'), () => vis('#fr-mission')]
     ];
     if (typeof currentView !== 'undefined' && currentView === 'sandbox') {
@@ -21143,13 +21152,16 @@ function sbnBuild() {
     SBN.key = key;
     if (!SBN.el) { SBN.el = h('nav', { id: 'sb-nav', class: 'sb-nav', 'aria-label': appLang() === 'pt' ? 'Partes do Sandbox' : 'Sandbox sections' }); document.body.append(SBN.el); }
     SBN.el.innerHTML = '';
-    SBN.items = items;
+    SBN.items = items; SBN.pin = null;
     SBN.el.hidden = !items.length;
     items.forEach(([ic, label, get], k) => SBN.el.append(h('button', { class: 'sb-nb', 'data-k': k, title: label, 'aria-label': label, onclick: () => {
         const t = get(); if (!t) { toast(appLang() === 'pt' ? 'Esta parte não está na tela agora' : 'This part is not on screen right now'); return; }
         // o cabeçalho fica preso no alto da tela: a parte começa logo abaixo dele
         const hd = document.querySelector('.app-header'), hb = hd && getComputedStyle(hd).position === 'sticky' ? hd.getBoundingClientRect().height + 8 : 0;
         const y = t.getBoundingClientRect().top + window.scrollY - 12 - hb;
+        // v27.1: a parte clicada fica acesa. As partes pequenas do fim da página (teste de mesa, calibração, missões) não
+        // conseguem subir até o alto da tela, e a regra da rolagem acendia outra; a escolha vale até o aluno rolar a página
+        SBN.pin = k; sbnSpy();
         window.scrollTo({ top: y, behavior: 'smooth' });
     } }, h('span', { class: 'sb-ni', text: ic }), h('span', { class: 'sb-nl', text: label }))));
     // as barras antigas ("↓ Arena · ↓ Código") ficam escondidas: a barra da direita faz o mesmo
@@ -21157,13 +21169,19 @@ function sbnBuild() {
     sbnSpy();
 }
 // a parte que está na tela: a última cujo topo já passou de 40% da altura da janela
+// (v27.1: no fim da página, a última parte que aparece na tela; e a parte clicada fica acesa até o aluno rolar)
 function sbnSpy() {
     if (!SBN.el || SBN.el.hidden) return;
     const mid = window.innerHeight * 0.4;
     let on = 0;
     SBN.items.forEach(([, , get], k) => { const t = get(); if (t && t.getBoundingClientRect().top <= mid) on = k; });
+    const atEnd = window.scrollY + window.innerHeight >= document.documentElement.scrollHeight - 4;
+    if (atEnd) SBN.items.forEach(([, , get], k) => { const t = get(); if (t && t.getBoundingClientRect().top < window.innerHeight - 40) on = k; });
+    if (SBN.pin !== undefined && SBN.pin !== null && SBN.items[SBN.pin] && SBN.items[SBN.pin][2]()) on = SBN.pin;
     SBN.el.querySelectorAll('.sb-nb').forEach(b => { b.classList.toggle('on', +b.dataset.k === on); b.disabled = !SBN.items[+b.dataset.k][2](); });
 }
+// rolagem do próprio aluno (roda do mouse, toque, teclas): solta a parte que tinha sido clicada
+['wheel', 'touchstart', 'keydown', 'mousedown'].forEach(ev => window.addEventListener(ev, e => { if (SBN.pin !== null && SBN.pin !== undefined && !(SBN.el && e.target instanceof Node && SBN.el.contains(e.target))) { SBN.pin = null; sbnSpy(); } }, { passive: true }));
 window.addEventListener('scroll', () => { if (SBN.raf) return; SBN.raf = (window.requestAnimationFrame || (f => setTimeout(f, 16)))(() => { SBN.raf = 0; sbnSpy(); }); }, { passive: true });
 setInterval(() => { try { sbnBuild(); sbnSpy(); } catch (e) {} }, 500);
 
