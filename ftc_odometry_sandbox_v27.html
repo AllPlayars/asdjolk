@@ -2395,6 +2395,24 @@ body.ui-no-v3d .v3d { display: block; }
 .gp2-last, .gp2-same, .gp2-empty { font-size: 10.5px; color: var(--text-muted, #888); }
 .gp2-same { color: #e65100; }
 .gp2-btns { display: flex; flex-wrap: wrap; gap: 6px; }
+/* v27.6: mapa das posições iniciais e caminho do ensaio */
+.st-map-box { display: flex; flex-direction: column; gap: 5px; margin: 4px 0; }
+.st-map { width: 100%; max-width: 230px; height: auto; user-select: none; }
+.st-field { fill: #2b2d31; stroke: #777; stroke-width: 1; }
+.st-wall { stroke-width: 4; } .st-wall.red { stroke: #e53935; } .st-wall.blue { stroke: #1e63d6; }
+.st-lz { fill-opacity: .25; stroke-width: 1; } .st-lz.red { fill: #e53935; stroke: #e53935; } .st-lz.blue { fill: #1e63d6; stroke: #1e63d6; }
+.st-fl { fill: #43a047; } .st-hive { fill: none; stroke-width: 1; stroke-dasharray: 3 2; } .st-hive.red { stroke: #e57373; } .st-hive.blue { stroke: #64b5f6; }
+.st-pos { cursor: pointer; } .st-pos polygon { stroke-width: 1.2; fill-opacity: .25; }
+.st-pos.red polygon { fill: #e53935; stroke: #e53935; } .st-pos.blue polygon { fill: #1e63d6; stroke: #64b5f6; }
+.st-pos .st-tip { fill: #ffc400 !important; stroke: none; fill-opacity: .9 !important; }
+.st-pos text { fill: #fff; font: 700 9px system-ui, sans-serif; text-anchor: middle; pointer-events: none; }
+.st-pos:hover polygon { fill-opacity: .55; }
+.st-pos.on polygon { fill-opacity: .9; stroke: #fff; stroke-width: 2; }
+.st-pos.npc polygon { stroke-dasharray: 3 2; fill-opacity: .5; }
+.st-pos.off { opacity: .25; pointer-events: none; }
+.st-pre-info { font-size: 11px; }
+.pre-path polyline { fill: none; stroke-width: 3; stroke-dasharray: 7 5; opacity: .75; }
+.pre-path polyline.red { stroke: #ff8a80; } .pre-path polyline.blue { stroke: #82b1ff; }
     </style>
 </head>
 <body>
@@ -2404,7 +2422,7 @@ body.ui-no-v3d .v3d { display: block; }
             <div class="brand-icon">FTC</div>
             <div class="brand-text">
                 <h1>Odometry Sandbox</h1>
-                <p>v27.5 · Alpha · Pontuação do jogo · IA em 3 níveis · Equipes</p>
+                <p>v27.6 · Alpha · Pontuação do jogo · IA em 3 níveis · Equipes</p>
             </div>
         </div>
         <nav class="header-nav app-nav" aria-label="Navegação">
@@ -2646,7 +2664,7 @@ body.ui-no-v3d .v3d { display: block; }
         <div class="status-bar">
             <div class="status-dot" id="status-dot"></div>
             <div class="status-text" id="compile-status">✅ Compilado com sucesso e rodando (Aguardando)</div>
-            <div class="status-env" data-i18n="statusEnv">Sandbox v27.5 (Monaco IDE)</div>
+            <div class="status-env" data-i18n="statusEnv">Sandbox v27.6 (Monaco IDE)</div>
         </div>
     </div>
 
@@ -2943,7 +2961,7 @@ const i18nV17 = {
     ko:["키보드와 게임패드","🎮 컨트롤러(USB 또는 블루투스)를 연결하고 아무 버튼이나 누르세요.","🎮 컨트롤러 연결됨"],
     ar:["لوحة المفاتيح وذراع التحكم","🎮 وصّل ذراع تحكم (USB أو Bluetooth) واضغط أي زر.","🎮 ذراع التحكم متصل"]
 };
-const SANDBOX_VERSION = 'v27.5';
+const SANDBOX_VERSION = 'v27.6';
 for (const l in i18nExtra) {
     Object.assign(i18n[l], i18nExtra[l]);
     I18N_V16_KEYS.forEach((k, i) => { i18n[l][k] = i18nV16Rows[l][i]; });
@@ -22003,6 +22021,218 @@ function tmsSync() {
     const sy = mtSyncPanel;
     mtSyncPanel = function () { const r = sy.apply(this, arguments); tmsSync(); return r; };
 })();
+
+/* =====================================================================
+   v27.6: POSIÇÕES INICIAIS E ENSAIO DO AUTÔNOMO
+   1) Mais posições iniciais, seguindo os exemplos da Figura 11-1 do manual
+      (G304: no lado da aliança, encostado na parede, fora da LOADING ZONE,
+      longe das FLOWERs e das peças da GARDEN), escolhidas num mapa.
+   2) Ensaio: no INIT de um Autonomous na partida, o Sandbox roda o seu
+      autônomo bem rápido (30 s em menos de 1 s), sem os outros robôs, e
+      guarda o caminho do seu robô. Depois tudo volta para o começo e a
+      partida segue normal. O aliado usa esse caminho: começa na posição
+      inicial mais longe dele, não planeja passar por onde você vai estar
+      nos próximos segundos, espera quando os caminhos se cruzam e escolhe
+      a vaga de PARK e o ponto de arremesso longe do seu caminho.
+   ===================================================================== */
+// posições novas (as do vermelho; as do azul são as mesmas giradas 180° em volta do centro do campo)
+[['r4', -12, -62.7, 90, 'Vermelho 4: parede da plateia, perto do meio', 'Red 4: audience wall, near the middle'],
+ ['r5', -62.7, -42, 0, 'Vermelho 5: parede vermelha, lado da plateia', 'Red 5: red wall, audience side'],
+ ['r6', -10, 62.7, -90, 'Vermelho 6: parede oposta, perto do meio', 'Red 6: far wall, near the middle'],
+ ['r7', -62.7, 62.7, -90, 'Vermelho 7: canto oposto', 'Red 7: far corner']].forEach(([k, x, y, h, pt, en]) => {
+    BB_STARTS[k] = { x, y, h, pt, en };
+    const bk = 'b' + k.slice(1), bpt = pt.replace('Vermelho', 'Azul').replace('parede vermelha', 'parede azul').replace('parede da plateia', '§').replace('parede oposta', 'parede da plateia').replace('§', 'parede oposta').replace('lado da plateia', 'lado oposto').replace('canto oposto', 'canto da plateia');
+    const ben = en.replace('Red', 'Blue').replace('red wall', 'blue wall').replace('audience wall', '§').replace('far wall', 'audience wall').replace('§', 'far wall').replace('audience side', 'far side').replace('far corner', 'audience corner');
+    BB_STARTS[bk] = { x: -x, y: -y, h: normDeg180(h + 180), pt: bpt, en: ben };
+    MT_STARTS.red.push(k); MT_STARTS.blue.push(bk);
+});
+// a caixa do robô numa posição inicial (pol.)
+const stPoly = k => { const s = BB_STARTS[k]; return mtPoly(s.x, s.y, s.h, 9); };
+const stOverlap = (a, b) => bbPolyHit(mtPoly(a.x, a.y, a.h, 8.95), mtPoly(b.x, b.y, b.h, 8.95));
+
+/* ---------------- o ensaio ---------------- */
+const PRE = { on: true, busy: false, path: null, ms: 0, om: null, side: null };
+try { const o = JSON.parse(localStorage.getItem('ftcSandbox.pre.v27') || '{}'); if (typeof o.on === 'boolean') PRE.on = o.on; } catch (e) {}
+function preRun(om, cfg) {
+    PRE.busy = true;
+    const t0 = performance.now(), logN = FR_LOG.length, soc = typeof BAT !== 'undefined' ? BAT.soc : null;
+    const path = [];
+    try {
+        // começo da partida, sem os outros robôs (o ensaio mostra o caminho do seu robô sozinho)
+        bbReset(); MATCH.npcs = []; BBG.balls = BBG.balls.filter(b => b.st !== 'npc');
+        frPlaceStart();
+        PRE.real(om, JSON.parse(JSON.stringify(cfg || {})), [{}, {}]);
+        if (!FR_RUN) return;
+        frStart();
+        const p0 = frWorld.pose(); path.push({ t: 0, x: p0.x, y: p0.y, h: p0.h });
+        for (let i = 1; i <= MT.auto * 60 + 30 && FR_RUN && FR_RUN.phase === 'running'; i++) {
+            simulateStep();
+            if (i % 6 === 0) { const p = frWorld.pose(); path.push({ t: i / 60, x: p.x, y: p.y, h: p.h }); }
+        }
+    } catch (e) { console.warn('ensaio:', e); }
+    finally {
+        if (FR_RUN) { try { frStop(); simulateStep(); } catch (e) {} if (FR_RUN) frFinish(FR_RUN, true); }
+        FR_ERRSTATE = null;                                  // um erro aparece de novo na partida de verdade
+        FR_LOG.splice(logN);
+        if (soc !== null) BAT.soc = soc;
+        PRE.busy = false;
+        PRE.path = path.length > 1 ? path : null; PRE.ms = Math.round(performance.now() - t0); PRE.om = om.name; PRE.side = MATCH.side;
+        bbReset(); frPlaceStart();                           // tudo de volta para o começo (os outros robôs voltam)
+    }
+}
+(function () {
+    PRE.real = frInit;
+    frInit = function (om, cfg, pads) {
+        if (PRE.on && !PRE.busy && om && om.kind === 'auto' && !FR_RUN && !FR_ERRSTATE && mtActive()) {
+            preRun(om, cfg);
+            if (PRE.path && typeof toast === 'function') toast(FRT(`Ensaio do autônomo: ${PRE.path[PRE.path.length - 1].t.toFixed(0)} s em ${PRE.ms} ms — o aliado vai desviar do seu caminho`, `Autonomous rehearsal: ${PRE.path[PRE.path.length - 1].t.toFixed(0)} s in ${PRE.ms} ms — your ally will avoid your path`));
+        } else if (om && om.kind === 'auto' && !PRE.busy) PRE.path = null;
+        return PRE.real.apply(this, arguments);
+    };
+    // durante o ensaio: sem os outros robôs, sem o relógio da partida e sem as missões
+    const st = mtStep; mtStep = function () { if (PRE.busy) return; return st.apply(this, arguments); };
+    if (typeof frMissionTick === 'function') { const mt = frMissionTick; frMissionTick = function () { if (PRE.busy) return; return mt.apply(this, arguments); }; }
+})();
+// onde o seu robô vai estar entre t0 e t1 (segundos do autônomo), pelo ensaio
+const preUse = n => PRE.path && n && n.ally && MATCH.phase === 'auto' && PRE.side === MATCH.side;
+function prePoses(t0, t1, step) {
+    const out = [], P = PRE.path; if (!P) return out;
+    for (const q of P) if (q.t >= t0 && q.t <= t1 && (!out.length || q.t - out[out.length - 1].t >= (step || 0))) out.push(q);
+    return out;
+}
+const preMinDist = (x, y) => PRE.path ? Math.min(...PRE.path.map(q => Math.hypot(q.x - x, q.y - y))) : Infinity;
+
+/* ---------------- os outros robôs: posições sem sobrepor e o aliado longe do seu caminho ---------------- */
+(function () {
+    const sp = mtSpawn;
+    mtSpawn = function () {
+        const r = sp.apply(this, arguments);
+        if (!mtActive() || !MATCH.npcs.length) return r;
+        // o seu robô já conta na posição inicial dele (no bbReset ele ainda não foi colocado lá)
+        const ms = BB_STARTS[mtStartKey()] || mtPlayerPose(), placed = [{ x: ms.x, y: ms.y, h: ms.h }];
+        const used = new Set([mtStartKey()]);
+        const move = (n, k) => {
+            const s = BB_STARTS[k], dx = s.x - n.x, dy = s.y - n.y;
+            n.start = k; n.x = s.x; n.y = s.y; n.h = s.h;
+            for (const q of n.store) { q.b.p.x += dx; q.b.p.y += dy; }
+        };
+        // o aliado primeiro: a posição mais longe do caminho do ensaio (sem ensaio, a que ele sorteou)
+        const order = MATCH.npcs.slice().sort((a, b) => (b.ally ? 1 : 0) - (a.ally ? 1 : 0));
+        for (const n of order) {
+            const cand = MT_STARTS[n.side].filter(k => !used.has(k) && !placed.some(p => stOverlap(BB_STARTS[k], p)));
+            let k = cand.includes(n.start) ? n.start : cand[0];
+            if (n.ally && PRE.path && PRE.side === MATCH.side && cand.length) k = cand.slice().sort((a, b) => preMinDist(BB_STARTS[b].x, BB_STARTS[b].y) - preMinDist(BB_STARTS[a].x, BB_STARTS[a].y))[0];
+            if (k && k !== n.start) move(n, k);
+            used.add(n.start); placed.push({ x: n.x, y: n.y, h: n.h });
+        }
+        mtPlaceStored();
+        return r;
+    };
+    // o A* do aliado trata como obstáculo onde você vai estar nos próximos 2,5 s
+    const mo = mtOthers;
+    mtOthers = function (self) {
+        const out = mo.apply(this, arguments);
+        if (preUse(self)) for (const q of prePoses(MATCH.T, MATCH.T + 2.5, 0.5)) out.push({ x: q.x, y: q.y, r: 19 });
+        return out;
+    };
+    // espera: se andando como pretende ele chegaria a menos de 22 pol. de onde você vai estar, ele para (e só gira)
+    const dv = mtDrive;
+    mtDrive = function (n, dt, tvx, tvy, th) {
+        if (preUse(n) && (tvx || tvy)) {
+            for (const q of prePoses(MATCH.T, MATCH.T + 1.2)) {
+                const k = q.t - MATCH.T, ax = n.x + tvx * k, ay = n.y + tvy * k;
+                if (Math.hypot(q.x - ax, q.y - ay) < 22 && Math.hypot(q.x - ax, q.y - ay) < Math.hypot(q.x - n.x, q.y - n.y)) { n.yield = (n.yield || 0) + dt; tvx = 0; tvy = 0; break; }
+            }
+        }
+        return dv.call(this, n, dt, tvx, tvy, th);
+    };
+    // vaga de PARK longe de onde você termina o autônomo
+    const ps = mtParkSlot;
+    mtParkSlot = function (n) {
+        const s = ps.apply(this, arguments);
+        if (preUse(n)) { const f = PRE.path[PRE.path.length - 1]; if (Math.hypot(f.x - s.x, f.y - s.y) < 20) { const ys = n.side === 'red' ? [27, 45] : [-27, -45]; s.y = ys.find(y => Math.abs(y - s.y) > 1) ?? s.y; } }
+        return s;
+    };
+    // ponto de arremesso longe do seu caminho (menos de 20 pol. dele fica proibido no autônomo)
+    const cs = mtChooseSpot;
+    mtChooseSpot = function (n) {
+        if (preUse(n)) { const up = Math.sign(BBG.hives[n.side].th) || 1; for (const s of mtSpots(n.side, up)) if (preMinDist(s.x, s.y) < 20) n.ban[s.x + ',' + s.y] = BBG.t + 1; }
+        return cs.apply(this, arguments);
+    };
+})();
+
+/* ---------------- arena 2D: o caminho do ensaio ---------------- */
+(function () {
+    const base = f3Draw2D;
+    f3Draw2D = function () {
+        const r = base.apply(this, arguments);
+        const svg = document.getElementById('f3-field'); if (!svg) return r;
+        let g = svg.querySelector('.pre-path');
+        if (!g) { g = document.createElementNS('http://www.w3.org/2000/svg', 'g'); g.setAttribute('class', 'pre-path'); svg.appendChild(g); }
+        let html = '';
+        if (PRE.path && mtActive() && PRE.side === MATCH.side && ['preAuto', 'auto'].includes(MATCH.phase)) {
+            const pts = PRE.path.map(q => ((CENTER + q.x / IN_PER_UNIT) * SCALE).toFixed(1) + ',' + ((CENTER - q.y / IN_PER_UNIT) * SCALE).toFixed(1)).join(' ');
+            html = `<polyline points="${pts}" class="${MATCH.side}"/>`;
+        }
+        if (g.dataset.h !== html) { g.innerHTML = html; g.dataset.h = html; }
+        return r;
+    };
+})();
+
+/* ---------------- mapa das posições iniciais ---------------- */
+function stMapEl() {
+    const S = 1.25, P = v => ((v + 72) * S).toFixed(1), Q = v => ((72 - v) * S).toFixed(1), W = 144 * S;
+    const ns = 'http://www.w3.org/2000/svg', el = document.createElementNS(ns, 'svg');
+    el.setAttribute('viewBox', `0 0 ${W} ${W}`); el.setAttribute('class', 'st-map'); el.id = 'st-map';
+    el.addEventListener('click', e => {
+        const k = e.target.closest('[data-k]'); if (!k) return;
+        if (typeof FR_RUN !== 'undefined' && FR_RUN && FR_RUN.phase === 'running') { toast(FRT('Pare o OpMode antes de mudar a posição inicial', 'Stop the OpMode before changing the start position')); return; }
+        BBG.opts.start = k.dataset.k; BBG.save(); resetSimulationState(); bbReset(); bbApplyStart();
+        if (typeof v3dSync === 'function') v3dSync(); if (typeof v3dRender === 'function') v3dRender(); stMapSync();
+    });
+    let s = `<rect x="0" y="0" width="${W}" height="${W}" class="st-field"/>`;
+    s += `<line x1="0" y1="0" x2="0" y2="${W}" class="st-wall red"/><line x1="${W}" y1="0" x2="${W}" y2="${W}" class="st-wall blue"/>`;
+    for (const sd of ['red', 'blue']) { const z = BB.loading[sd]; s += `<rect x="${P(z.x0)}" y="${Q(z.y1)}" width="${((z.x1 - z.x0) * S).toFixed(1)}" height="${((z.y1 - z.y0) * S).toFixed(1)}" class="st-lz ${sd}"/>`; }
+    for (const fl of BB.flowers) s += `<circle cx="${P(fl.x)}" cy="${Q(fl.y)}" r="${(3.5 * S).toFixed(1)}" class="st-fl"/>`;
+    for (const sd of ['red', 'blue']) s += `<rect x="${P(sd === 'red' ? -24.73 - 10 : 24.73 - 15)}" y="${Q(20.5)}" width="${(25 * S).toFixed(1)}" height="${(41 * S).toFixed(1)}" class="st-hive ${sd}"/>`;
+    for (const k of MT_STARTS.red.concat(MT_STARTS.blue)) {
+        const pts = stPoly(k).map(q => P(q.x) + ',' + Q(q.y)).join(' '), b = BB_STARTS[k];
+        const tip = mtPoly(b.x + Math.cos(b.h * Math.PI / 180) * 6, b.y + Math.sin(b.h * Math.PI / 180) * 6, b.h, 1.6).map(q => P(q.x) + ',' + Q(q.y)).join(' ');
+        s += `<g data-k="${k}" class="st-pos ${k[0] === 'r' ? 'red' : 'blue'}"><title>${b[appLang() === 'pt' ? 'pt' : 'en']}</title><polygon points="${pts}"/><polygon points="${tip}" class="st-tip"/><text x="${P(b.x)}" y="${(+Q(b.y) + 4).toFixed(1)}">${k.slice(1)}</text></g>`;
+    }
+    s += `<g class="st-ally"></g>`;
+    el.innerHTML = s;
+    return el;
+}
+function stMapSync() {
+    const m = document.getElementById('st-map'); if (!m) return;
+    const mine = mtActive() ? mtStartKey() : BBG.opts.start, side = MATCH.on ? MATCH.side : null;
+    m.querySelectorAll('.st-pos').forEach(g => {
+        const k = g.dataset.k, off = side && (k[0] === 'r' ? 'red' : 'blue') !== side;
+        g.classList.toggle('on', k === mine); g.classList.toggle('off', !!off);
+        const n = MATCH.npcs.find(q => q.start === k); g.classList.toggle('npc', !!n);
+    });
+}
+function stMapPlace() {
+    const sel = document.querySelector('#view-robot .v3d-start'); if (!sel) return;
+    const lbl = sel.closest('label');
+    if (!document.getElementById('st-map-box')) {
+        const box = h('div', { class: 'st-map-box', id: 'st-map-box' },
+            h('div', { class: 'muted st-map-help', text: FRT('Posições iniciais (Figura 11-1 do manual): clique para escolher. Na partida, só as da sua aliança; as dos outros robôs ficam marcadas.', 'Start positions (manual Figure 11-1): click to choose. In a match, only your alliance\'s; the other robots\' are marked.') }),
+            stMapEl(),
+            h('label', { class: 'v3d-chk' }, h('input', { type: 'checkbox', checked: PRE.on ? true : null, onchange: e => { PRE.on = e.target.checked; if (!PRE.on) PRE.path = null; try { localStorage.setItem('ftcSandbox.pre.v27', JSON.stringify({ on: PRE.on })); } catch (er) {} } }),
+                ' ', FRT('Ensaiar o meu autônomo no INIT (o aliado desvia do meu caminho)', 'Rehearse my autonomous at INIT (my ally avoids my path)')),
+            h('div', { class: 'muted st-pre-info', id: 'st-pre-info' }));
+        lbl.after(box);
+    }
+    stMapSync();
+    const info = document.getElementById('st-pre-info');
+    if (info) {
+        const t = PRE.path ? FRT(`Último ensaio (${PRE.om}): ${PRE.path[PRE.path.length - 1].t.toFixed(0)} s de autônomo em ${PRE.ms} ms; o caminho aparece tracejado na arena.`, `Last rehearsal (${PRE.om}): ${PRE.path[PRE.path.length - 1].t.toFixed(0)} s of autonomous in ${PRE.ms} ms; the path is dashed on the arena.`) : '';
+        if (info.textContent !== t) info.textContent = t;
+    }
+}
+setInterval(() => { try { stMapPlace(); } catch (e) {} }, 500);
 </script>
 </body>
 </html>
