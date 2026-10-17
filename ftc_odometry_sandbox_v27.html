@@ -2422,7 +2422,7 @@ body.ui-no-v3d .v3d { display: block; }
             <div class="brand-icon">FTC</div>
             <div class="brand-text">
                 <h1>Odometry Sandbox</h1>
-                <p>v27.7 · Alpha · Pontuação do jogo · IA em 3 níveis · Equipes</p>
+                <p>v27.8 · Alpha · Pontuação do jogo · IA em 3 níveis · Equipes</p>
             </div>
         </div>
         <nav class="header-nav app-nav" aria-label="Navegação">
@@ -2664,7 +2664,7 @@ body.ui-no-v3d .v3d { display: block; }
         <div class="status-bar">
             <div class="status-dot" id="status-dot"></div>
             <div class="status-text" id="compile-status">✅ Compilado com sucesso e rodando (Aguardando)</div>
-            <div class="status-env" data-i18n="statusEnv">Sandbox v27.7 (Monaco IDE)</div>
+            <div class="status-env" data-i18n="statusEnv">Sandbox v27.8 (Monaco IDE)</div>
         </div>
     </div>
 
@@ -2961,7 +2961,7 @@ const i18nV17 = {
     ko:["키보드와 게임패드","🎮 컨트롤러(USB 또는 블루투스)를 연결하고 아무 버튼이나 누르세요.","🎮 컨트롤러 연결됨"],
     ar:["لوحة المفاتيح وذراع التحكم","🎮 وصّل ذراع تحكم (USB أو Bluetooth) واضغط أي زر.","🎮 ذراع التحكم متصل"]
 };
-const SANDBOX_VERSION = 'v27.7';
+const SANDBOX_VERSION = 'v27.8';
 for (const l in i18nExtra) {
     Object.assign(i18n[l], i18nExtra[l]);
     I18N_V16_KEYS.forEach((k, i) => { i18n[l][k] = i18nV16Rows[l][i]; });
@@ -22271,6 +22271,46 @@ setInterval(() => {
         if (el.textContent !== t) el.textContent = t;
     } catch (e) {}
 }, 2000);
+
+/* ---------------- v27.8: placar e relógio na vista 3D da arena ---------------- */
+// o mesmo placar de cima da arena 2D (pontos, viradas, quanto falta para virar e o relógio), desenhado no alto da imagem
+// 3D; no fim de jogo (últimos 60 s), o relógio fica amarelo, e nos últimos 10 s, vermelho
+function v3dBoard(R) {
+    if (!mtActive() || V3D.mode !== 'arena') return;
+    const g = R.g, k = Math.min(2.2, Math.max(1, R.W / (R.cv.clientWidth || R.W)));
+    const S = scCalc(), ph = MATCH.phase, dur = ph === 'auto' ? MT.auto : MT.tele, live = mtLive(), left = dur - MATCH.T;
+    const u = sd => Math.round(Math.min(1, bbTipUnits(sd)) * 100);
+    const clock = live ? (ph === 'auto' ? 'AUTO ' : 'TELEOP ') + mtClockTxt(left) : mtt2('ph', ph);
+    const parts = [
+        { t: `${S.red.total}`, sub: `${MATCH.tips.red}⟲ · ${u('red')}%`, bg: 'rgba(211,47,47,.92)', fg: '#fff' },
+        { t: clock, sub: live && ph === 'teleop' && left <= MT.endgame ? FRT('fim de jogo', 'endgame') : (SC.final ? FRT('final', 'final') : ''), bg: 'rgba(20,22,26,.88)', fg: live && ph === 'teleop' && left <= 10 ? '#ff5252' : live && ph === 'teleop' && left <= MT.endgame ? '#ffd54f' : '#fff', mid: true },
+        { t: `${S.blue.total}`, sub: `${u('blue')}% · ${MATCH.tips.blue}⟲`, bg: 'rgba(30,99,214,.92)', fg: '#fff' }
+    ];
+    g.save();
+    g.textAlign = 'center'; g.textBaseline = 'alphabetic';
+    const big = p => (p.mid ? (live ? 18 : 12) : 20) * k, small = 10 * k, padX = 10 * k, hgt = 42 * k, gap = 4 * k, y0 = 8 * k;
+    const w = parts.map(p => { g.font = `700 ${big(p)}px Inter, system-ui, sans-serif`; const a = g.measureText(p.t).width; g.font = `600 ${small}px Inter, system-ui, sans-serif`; return Math.max(a, g.measureText(p.sub).width, (p.mid ? 96 : 54) * k) + 2 * padX; });
+    let x = R.W / 2 - (w.reduce((a, b) => a + b, 0) + gap * 2) / 2;
+    parts.forEach((p, i) => {
+        const r = 8 * k;
+        g.fillStyle = p.bg; g.beginPath();
+        if (g.roundRect) g.roundRect(x, y0, w[i], hgt, r); else g.rect(x, y0, w[i], hgt);
+        g.fill();
+        g.fillStyle = p.fg; g.font = `700 ${big(p)}px Inter, system-ui, sans-serif`;
+        g.fillText(p.t, x + w[i] / 2, y0 + (p.sub ? 24 : 28) * k);
+        if (p.sub) { g.fillStyle = 'rgba(255,255,255,.85)'; g.font = `600 ${small}px Inter, system-ui, sans-serif`; g.fillText(p.sub, x + w[i] / 2, y0 + 37 * k); }
+        x += w[i] + gap;
+    });
+    g.restore();
+}
+(function () {
+    const vr = v3dRender;
+    v3dRender = function () {
+        const r = vr.apply(this, arguments);
+        try { if (V3D.R) v3dBoard(V3D.R); } catch (e) { if (!V3D.boardErr) { V3D.boardErr = true; console.warn('placar 3D:', e); } }
+        return r;
+    };
+})();
 </script>
 </body>
 </html>
