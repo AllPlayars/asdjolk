@@ -2404,7 +2404,7 @@ body.ui-no-v3d .v3d { display: block; }
             <div class="brand-icon">FTC</div>
             <div class="brand-text">
                 <h1>Odometry Sandbox</h1>
-                <p>v27.2 · Alpha · Pontuação do jogo · IA em 3 níveis · Dois controles</p>
+                <p>v27.3 · Alpha · Pontuação do jogo · IA em 3 níveis · Equipes</p>
             </div>
         </div>
         <nav class="header-nav app-nav" aria-label="Navegação">
@@ -2646,7 +2646,7 @@ body.ui-no-v3d .v3d { display: block; }
         <div class="status-bar">
             <div class="status-dot" id="status-dot"></div>
             <div class="status-text" id="compile-status">✅ Compilado com sucesso e rodando (Aguardando)</div>
-            <div class="status-env" data-i18n="statusEnv">Sandbox v27.2 (Monaco IDE)</div>
+            <div class="status-env" data-i18n="statusEnv">Sandbox v27.3 (Monaco IDE)</div>
         </div>
     </div>
 
@@ -2943,7 +2943,7 @@ const i18nV17 = {
     ko:["키보드와 게임패드","🎮 컨트롤러(USB 또는 블루투스)를 연결하고 아무 버튼이나 누르세요.","🎮 컨트롤러 연결됨"],
     ar:["لوحة المفاتيح وذراع التحكم","🎮 وصّل ذراع تحكم (USB أو Bluetooth) واضغط أي زر.","🎮 ذراع التحكم متصل"]
 };
-const SANDBOX_VERSION = 'v27.2';
+const SANDBOX_VERSION = 'v27.3';
 for (const l in i18nExtra) {
     Object.assign(i18n[l], i18nExtra[l]);
     I18N_V16_KEYS.forEach((k, i) => { i18n[l][k] = i18nV16Rows[l][i]; });
@@ -21031,7 +21031,8 @@ function mtDraw3D(R, what) {
             const P = mtPoly(n.x, n.y, n.h).map(q => ({ x: (CENTER + q.x / IN_PER_UNIT) * SCALE, y: (CENTER - q.y / IN_PER_UNIT) * SCALE }));
             const c = { x: (CENTER + n.x / IN_PER_UNIT) * SCALE, y: (CENTER - n.y / IN_PER_UNIT) * SCALE }, hr = n.h * Math.PI / 180;
             const f = { x: c.x + Math.cos(hr) * 26, y: c.y - Math.sin(hr) * 26 };
-            html += `<g class="mt-bot ${n.side}"><polygon points="${P.map(q => q.x.toFixed(1) + ',' + q.y.toFixed(1)).join(' ')}"/><line x1="${c.x.toFixed(1)}" y1="${c.y.toFixed(1)}" x2="${f.x.toFixed(1)}" y2="${f.y.toFixed(1)}"/><text x="${c.x.toFixed(1)}" y="${(c.y + 4).toFixed(1)}">${n.label}${n.store.length ? '·' + n.store.length : ''}</text></g>`;
+            const T = typeof TEAMS !== 'undefined' && n.team ? TEAMS[n.team] : null, fillS = T ? ` style="fill:rgba(${T.top.join(',')},.9)"` : '', accS = T ? ` style="stroke:rgb(${T.acc.join(',')})"` : '', txtS = T && (0.299 * T.top[0] + 0.587 * T.top[1] + 0.114 * T.top[2]) > 150 ? ' style="fill:#111"' : '';
+            html += `<g class="mt-bot ${n.side}"><polygon points="${P.map(q => q.x.toFixed(1) + ',' + q.y.toFixed(1)).join(' ')}"${fillS}/><line x1="${c.x.toFixed(1)}" y1="${c.y.toFixed(1)}" x2="${f.x.toFixed(1)}" y2="${f.y.toFixed(1)}"${accS}/><text x="${c.x.toFixed(1)}" y="${(c.y + 4).toFixed(1)}"${txtS}>${n.label}${n.store.length ? '·' + n.store.length : ''}</text></g>`;
         }
         if (g.dataset.h !== html) { g.innerHTML = html; g.dataset.h = html; }
         return r;
@@ -21088,7 +21089,7 @@ function mtInfoHtml() {
         if (pk && pk[sd].length) s += ` · ${mtt('parked')}: ${pk[sd].join(', ')}`;
         s += '</div>';
     }
-    for (const n of MATCH.npcs) s += `<div class="mt-npc ${n.side}">${n.label} (${n.ally ? mtt('ally') : mtt('opp')}, IA ${MT_LV_NAMES[n.level || 'smart'][appLang() === 'pt' ? 0 : 1]}) · auto: ${mtt2('plan', n.plan)} · ${n.store.length}/4${n.shots ? ' · ' + n.shots + ' ' + (appLang() === 'pt' ? 'arremessos' : 'shots') + ' (' + (n.hits || 0) + ' ' + mtt('hits') + ')' : ''}</div>`;
+    for (const n of MATCH.npcs) s += `<div class="mt-npc ${n.side}">${n.label}${n.team && typeof TEAMS !== 'undefined' ? ' ' + TEAMS[n.team].name : ''} (${n.ally ? mtt('ally') : mtt('opp')}, IA ${MT_LV_NAMES[n.level || 'smart'][appLang() === 'pt' ? 0 : 1]}) · auto: ${mtt2('plan', n.plan)} · ${n.store.length}/4${n.shots ? ' · ' + n.shots + ' ' + (appLang() === 'pt' ? 'arremessos' : 'shots') + ' (' + (n.hits || 0) + ' ' + mtt('hits') + ')' : ''}</div>`;
     return s;
 }
 // placar em cima da arena 2D e informações no cartão
@@ -21858,6 +21859,144 @@ function bbKeepInside(b, bots) {
         }
         return false;
     };
+})();
+
+/* =====================================================================
+   v27.3: AS EQUIPES E AS CORES DOS ROBÔS
+   Quatro equipes, cada uma com três cores (estrutura, mecanismos e
+   detalhes) e, na vista de cima, a cor do topo e a de destaque:
+     Bug Hunters #31949   branco, magenta e azul-claro   (topo azul-claro, destaque magenta)
+     Flashbio #31888      vermelho, amarelo e cinza      (topo vermelho, destaque amarelo)
+     Thunderbóticos #31856 azul-escuro, amarelo e azul   (topo azul-escuro, destaque amarelo)
+     Mega Snakes #31879   verde-escuro, branco e preto   (topo verde-escuro, destaque cinza)
+   O aluno escolhe a sua equipe (ou o robô padrão), também com a partida
+   desligada; com 4 robôs, escolhe o aliado (os adversários são as outras
+   duas equipes); com 2 robôs, escolhe o adversário. A placa e a bandeira
+   continuam na cor da aliança, e, na vista de cima, a borda também.
+   ===================================================================== */
+const TEAMS = {
+    bug:     { name: 'Bug Hunters',    num: 31949, c: [[245, 245, 245], [214, 0, 140], [79, 195, 247]], top: [79, 195, 247], acc: [214, 0, 140] },
+    flash:   { name: 'Flashbio',       num: 31888, c: [[211, 47, 47], [253, 216, 53], [158, 158, 158]], top: [211, 47, 47], acc: [253, 216, 53] },
+    thunder: { name: 'Thunderbóticos', num: 31856, c: [[13, 40, 110], [255, 214, 0], [33, 150, 243]], top: [13, 40, 110], acc: [255, 214, 0] },
+    mega:    { name: 'Mega Snakes',    num: 31879, c: [[27, 94, 32], [245, 245, 245], [25, 25, 25]], top: [27, 94, 32], acc: [158, 158, 158] }
+};
+const TEAM_KEYS = Object.keys(TEAMS);
+const TMS = { me: 'default', ally: 'flash', opp: 'thunder' };
+try { const o = JSON.parse(localStorage.getItem('ftcSandbox.teams.v27') || '{}'); for (const k of ['me', 'ally', 'opp']) if (o[k] === 'default' || TEAMS[o[k]]) TMS[k] = o[k]; } catch (e) {}
+const tmsSave = () => { try { localStorage.setItem('ftcSandbox.teams.v27', JSON.stringify(TMS)); } catch (e) {} };
+const rgb = c => `rgb(${c[0]},${c[1]},${c[2]})`;
+const tmDark = (c, k) => c.map(v => Math.round(v * k));
+// equipes dos outros robôs: com 4 robôs, o aliado escolhido e as duas que sobram; com 2, o adversário escolhido
+function tmsFix() {
+    const mine = TEAMS[TMS.me] ? TMS.me : null;
+    const free = TEAM_KEYS.filter(k => k !== mine);
+    if (!free.includes(TMS.ally)) TMS.ally = free[0];
+    if (!free.includes(TMS.opp)) TMS.opp = free.find(k => k !== TMS.ally) || free[0];
+}
+function tmsFor(role) {
+    tmsFix();
+    if (MATCH.n === 2) return role === 'opp1' ? TMS.opp : null;
+    if (role === 'ally') return TMS.ally;
+    const rest = TEAM_KEYS.filter(k => k !== TMS.me && k !== TMS.ally);
+    return role === 'opp1' ? rest[0] : rest[1];
+}
+// troca as cores das peças do modelo 3D pelas da equipe (as rodas, os motores, a bateria e as câmeras ficam)
+function tmRecolor(parts, key) {
+    const T = TEAMS[key]; if (!T) return parts;
+    const C = V3_COL, m = new Map([
+        [C.alu, T.c[0]], [C.aluDk, T.c[2]], [C.plate, T.top],
+        [C.intake, T.c[1]], [C.mid, T.c[1]], [C.shooter, T.c[1]], [C.arm, T.c[1]],
+        [C.intakeDk, tmDark(T.c[1], 0.72)], [C.shooterDk, tmDark(T.c[1], 0.72)], [C.armDk, tmDark(T.c[1], 0.72)]
+    ]);
+    return parts.map(p => m.has(p.color) ? Object.assign({}, p, { color: m.get(p.color) }) : p);
+}
+(function () {
+    // robô do aluno na vista 3D
+    const rp = v3dRobotParts; let cur = null;
+    v3dRobotParts = function () { const p = rp.apply(this, arguments); return cur ? tmRecolor(p, cur) : p; };
+    const vr = v3dRobot;
+    v3dRobot = function () { cur = typeof frActive === 'function' && frActive() && TEAMS[TMS.me] ? TMS.me : null; try { return vr.apply(this, arguments); } finally { cur = null; } };
+    // outros robôs da partida (modelo completo e modelo simples)
+    const dr = mtDrawRobot;
+    mtDrawRobot = function (R, pose, parts) { return dr.call(this, R, pose, pose && pose.team ? tmRecolor(parts, pose.team) : parts); };
+    // equipes nos robôs da partida, e o número da equipe como nome
+    const sp = mtSpawn;
+    mtSpawn = function () {
+        const r = sp.apply(this, arguments);
+        for (const n of MATCH.npcs) { const k = tmsFor(n.role); if (k) { n.team = k; n.label = String(TEAMS[k].num); } }
+        return r;
+    };
+})();
+// vista de cima: o robô do aluno com a cor do topo e a de destaque (a borda continua na cor da aliança)
+function tmPaintTop() {
+    const T = typeof frActive === 'function' && frActive() ? TEAMS[TMS.me] : null, key = T ? TMS.me : '';
+    if (robot.dataset.team === key) return;
+    robot.dataset.team = key;
+    const arrow = robot.querySelector('.direction-arrow'), piv = robot.querySelector('.center-pivot');
+    robot.style.backgroundColor = T ? `rgba(${T.top[0]},${T.top[1]},${T.top[2]},0.85)` : '';
+    robot.style.borderColor = T && !robot.classList.contains('al-red') && !robot.classList.contains('al-blue') ? rgb(T.acc) : '';
+    if (arrow) arrow.style.borderBottomColor = T ? rgb(T.acc) : '';
+    if (piv) piv.style.backgroundColor = T ? rgb(T.acc) : '';
+    robot.title = T ? `${T.name} #${T.num}` : '';
+}
+(function () {
+    const ss = simulateStep;
+    simulateStep = function () { const r = ss.apply(this, arguments); try { tmPaintTop(); } catch (e) {} return r; };
+    const pr = v27PaintRobot;
+    v27PaintRobot = function () { const al = robot.dataset.al; const r = pr.apply(this, arguments); if (robot.dataset.al !== al) robot.dataset.team = '-'; try { tmPaintTop(); } catch (e) {} return r; };
+})();
+// painel: a sua equipe (vale também com a partida desligada), o aliado (4 robôs) e o adversário (2 robôs)
+function v27TeamsEl(busy, apply) {
+    const opt = (k, sel) => h('option', { value: k, text: k === 'default' ? FRT('Padrão do Sandbox', 'Sandbox default') : `${TEAMS[k].name} #${TEAMS[k].num}`, selected: sel === k ? true : null });
+    const change = (key, v) => {
+        if (busy() && key !== 'me') { toast(FRT('Pare o OpMode antes de mudar a partida', 'Stop the OpMode before changing the match')); tmsSync(); return; }
+        TMS[key] = v; tmsFix(); tmsSave(); tmsSync();
+        if (MATCH.on && !busy()) apply(); else { robot.dataset.team = '-'; tmPaintTop(); if (typeof v3dRender === 'function') v3dRender(); }
+    };
+    const sel = (key, list, lbl) => h('label', { class: 'v3d-chk v27-tm-row', 'data-k': key }, h('span', { class: 'v27-lv-lbl', text: lbl + ':' }),
+        h('select', { class: 'v3d-pre v27-tm-' + key, onchange: e => change(key, e.target.value) }, ...list.map(k => opt(k, TMS[key]))));
+    return h('div', { class: 'v27-levels', id: 'v27-teams' },
+        h('div', { class: 'v27-sub', text: FRT('Equipes e cores dos robôs', 'Teams and robot colors') }),
+        sel('me', ['default'].concat(TEAM_KEYS), FRT('Seu robô', 'Your robot')),
+        sel('ally', TEAM_KEYS, FRT('Aliado', 'Ally')),
+        sel('opp', TEAM_KEYS, FRT('Adversário', 'Opponent')),
+        h('div', { class: 'muted v27-hp-info', id: 'v27-tm-info' }));
+}
+function tmsSync() {
+    const el = document.getElementById('v27-teams'); if (!el) return;
+    tmsFix();
+    const mine = TEAMS[TMS.me] ? TMS.me : null;
+    for (const key of ['me', 'ally', 'opp']) {
+        const s = el.querySelector('.v27-tm-' + key); if (!s) continue;
+        s.value = TMS[key];
+        // a sua equipe não aparece para os outros robôs
+        if (key !== 'me') s.querySelectorAll('option').forEach(o => { o.disabled = o.value === mine; });
+    }
+    el.querySelector('[data-k="ally"]').hidden = !(MATCH.on && MATCH.n === 4);
+    el.querySelector('[data-k="opp"]').hidden = !(MATCH.on && MATCH.n === 2);
+    const info = document.getElementById('v27-tm-info');
+    if (info) {
+        let t = '';
+        if (MATCH.on && MATCH.n === 4) t = FRT('Adversários: ', 'Opponents: ') + ['opp1', 'opp2'].map(r => TEAMS[tmsFor(r)].name).join(FRT(' e ', ' and '));
+        else if (!MATCH.on) t = FRT('Sem partida: só muda a cor do seu robô.', 'No match: only your robot color changes.');
+        if (info.textContent !== t) info.textContent = t;
+    }
+}
+(function () {
+    const pe = mtPanelEl;
+    mtPanelEl = function () {
+        const el = pe.apply(this, arguments);
+        try {
+            const busy = () => typeof FR_RUN !== 'undefined' && FR_RUN && FR_RUN.phase === 'running';
+            const apply = () => { MATCH.save(); MATCH.phase = 'idle'; MATCH.run = null; bbReset(); bbApplyStart(); if (typeof resetDriveState === 'function') resetDriveState(); mtSyncPanel(); MT_UI_T = 0; mtUpdateUI(); if (typeof f3Draw2D === 'function') f3Draw2D(); if (typeof v3dRender === 'function') v3dRender(); };
+            const lv = el.querySelector('#v27-levels');
+            const t = v27TeamsEl(busy, apply);
+            if (lv) lv.before(t); else el.append(t);
+        } catch (e) { console.warn('v27.3:', e); }
+        return el;
+    };
+    const sy = mtSyncPanel;
+    mtSyncPanel = function () { const r = sy.apply(this, arguments); tmsSync(); return r; };
 })();
 </script>
 </body>
