@@ -2404,7 +2404,7 @@ body.ui-no-v3d .v3d { display: block; }
             <div class="brand-icon">FTC</div>
             <div class="brand-text">
                 <h1>Odometry Sandbox</h1>
-                <p>v27.4 · Alpha · Pontuação do jogo · IA em 3 níveis · Equipes</p>
+                <p>v27.5 · Alpha · Pontuação do jogo · IA em 3 níveis · Equipes</p>
             </div>
         </div>
         <nav class="header-nav app-nav" aria-label="Navegação">
@@ -2646,7 +2646,7 @@ body.ui-no-v3d .v3d { display: block; }
         <div class="status-bar">
             <div class="status-dot" id="status-dot"></div>
             <div class="status-text" id="compile-status">✅ Compilado com sucesso e rodando (Aguardando)</div>
-            <div class="status-env" data-i18n="statusEnv">Sandbox v27.4 (Monaco IDE)</div>
+            <div class="status-env" data-i18n="statusEnv">Sandbox v27.5 (Monaco IDE)</div>
         </div>
     </div>
 
@@ -2943,7 +2943,7 @@ const i18nV17 = {
     ko:["키보드와 게임패드","🎮 컨트롤러(USB 또는 블루투스)를 연결하고 아무 버튼이나 누르세요.","🎮 컨트롤러 연결됨"],
     ar:["لوحة المفاتيح وذراع التحكم","🎮 وصّل ذراع تحكم (USB أو Bluetooth) واضغط أي زر.","🎮 ذراع التحكم متصل"]
 };
-const SANDBOX_VERSION = 'v27.4';
+const SANDBOX_VERSION = 'v27.5';
 for (const l in i18nExtra) {
     Object.assign(i18n[l], i18nExtra[l]);
     I18N_V16_KEYS.forEach((k, i) => { i18n[l][k] = i18nV16Rows[l][i]; });
@@ -21866,7 +21866,7 @@ function bbKeepInside(b, bots) {
    v27.3: AS EQUIPES E AS CORES DOS ROBÔS
    Quatro equipes, cada uma com três cores (estrutura, mecanismos e
    detalhes) e, na vista de cima, a cor do topo e a de destaque:
-     Bug Hunters #31949   azul, magenta e branco         (topo azul, destaque magenta)
+     Bug Hunters #31949   azul, rosa-magenta e branco    (topo azul, destaque rosa-magenta 240, 92, 255)
      Flashbio #31888      vermelho, cinza e amarelo      (topo vermelho, destaque amarelo)
    (a ordem é a da área: a estrutura e o topo são a maior parte do robô, depois os mecanismos e, por fim, os detalhes)
      Thunderbóticos #31856 azul-escuro, amarelo e azul   (topo azul-escuro, destaque amarelo)
@@ -21877,7 +21877,7 @@ function bbKeepInside(b, bots) {
    continuam na cor da aliança, e, na vista de cima, a borda também.
    ===================================================================== */
 const TEAMS = {
-    bug:     { name: 'Bug Hunters',    num: 31949, c: [[70, 139, 218], [214, 0, 140], [245, 245, 245]], top: [70, 139, 218], acc: [214, 0, 140] },   // azul entre o do logo (63, 112, 181) e o da placa (77, 166, 255)
+    bug:     { name: 'Bug Hunters',    num: 31949, c: [[70, 139, 218], [240, 92, 255], [245, 245, 245]], top: [70, 139, 218], acc: [240, 92, 255] },   // azul entre o do logo (63, 112, 181) e o da placa (77, 166, 255)
     flash:   { name: 'Flashbio',       num: 31888, c: [[211, 47, 47], [158, 158, 158], [253, 216, 53]], top: [211, 47, 47], acc: [253, 216, 53] },
     thunder: { name: 'Thunderbóticos', num: 31856, c: [[13, 40, 110], [255, 214, 0], [33, 150, 243]], top: [13, 40, 110], acc: [255, 214, 0] },
     mega:    { name: 'Mega Snakes',    num: 31879, c: [[27, 94, 32], [245, 245, 245], [25, 25, 25]], top: [27, 94, 32], acc: [158, 158, 158] }
