@@ -2444,7 +2444,7 @@ body.ui-no-v3d .v3d { display: block; }
             <div class="brand-icon">FTC</div>
             <div class="brand-text">
                 <h1>Odometry Sandbox</h1>
-                <p>v27.14 · Alpha · Pontuação do jogo · IA em 3 níveis · Equipes</p>
+                <p>v27.13 · Alpha · Pontuação do jogo · IA em 3 níveis · Equipes</p>
             </div>
         </div>
         <nav class="header-nav app-nav" aria-label="Navegação">
@@ -2686,7 +2686,7 @@ body.ui-no-v3d .v3d { display: block; }
         <div class="status-bar">
             <div class="status-dot" id="status-dot"></div>
             <div class="status-text" id="compile-status">✅ Compilado com sucesso e rodando (Aguardando)</div>
-            <div class="status-env" data-i18n="statusEnv">Sandbox v27.14 (Monaco IDE)</div>
+            <div class="status-env" data-i18n="statusEnv">Sandbox v27.13 (Monaco IDE)</div>
         </div>
     </div>
 
@@ -2983,7 +2983,7 @@ const i18nV17 = {
     ko:["키보드와 게임패드","🎮 컨트롤러(USB 또는 블루투스)를 연결하고 아무 버튼이나 누르세요.","🎮 컨트롤러 연결됨"],
     ar:["لوحة المفاتيح وذراع التحكم","🎮 وصّل ذراع تحكم (USB أو Bluetooth) واضغط أي زر.","🎮 ذراع التحكم متصل"]
 };
-const SANDBOX_VERSION = 'v27.14';
+const SANDBOX_VERSION = 'v27.13';
 for (const l in i18nExtra) {
     Object.assign(i18n[l], i18nExtra[l]);
     I18N_V16_KEYS.forEach((k, i) => { i18n[l][k] = i18nV16Rows[l][i]; });
@@ -13144,8 +13144,6 @@ function frReferenceEl() {
             ['shooter.getVelocity()', pt ? 'espere voltar ao alvo antes do próximo lançamento' : 'wait for it to return to the target before the next shot'],
             ['turret.setPosition(0.5 + graus / 360.0)', pt ? 'torreta: 0,5 = frente, ±180° nas pontas (batente: não dá a volta)' : 'turret: 0.5 = forward, ±180° at the ends (hard stop: no wrap-around)'],
             ['arm.setPosition(1); armRoller.setPower(1)', pt ? 'estende o braço com o rolo puxando; volte com arm.setPosition(0) e o intake ligado' : 'extends the arm with the roller pulling; come back with arm.setPosition(0) and the intake on'],
-            ['sideArm.setPosition(0.35) → sideArm.setPosition(1) → sideArm.setPosition(0)', pt ? 'braço lateral (servo 1, se escolhido na vista 3D): abre para a direita, varre a frente do intake trazendo um POLLEN da FLOWER e volta para o lado' : 'side arm (servo 1, when chosen in the 3D view): opens to the right, sweeps across the front of the intake bringing one POLLEN from the FLOWER, and folds back'],
-            ['brush.setPower(1)', pt ? 'escova (servo de rotação contínua 2, se escolhida na vista 3D): gira para dentro e puxa o POLLEN da FLOWER encostada no canto esquerdo da frente' : 'brush (continuous rotation servo 2, when chosen in the 3D view): spins inward and pulls the POLLEN of the FLOWER at the front-left corner'],
             [pt ? 'Física' : 'Physics', pt ? 'g = 386,1 pol/s², sem arrasto do ar: a trajetória é uma parábola. A peça entra na CELL pela abertura; bate nas paredes de policarbonato (restituição 0,4). A HIVE vira quando o torque das peças da CELL de cima vence a trava (cerca de 3 NECTAR + 4 POLLEN)' : 'g = 386.1 in/s², no air drag: the path is a parabola. The piece enters the CELL through the opening; it bounces off the polycarbonate walls (restitution 0.4). The HIVE tips when the torque of the pieces in the up CELL beats the latch (about 3 NECTAR + 4 POLLEN)']]) : null,
         // v24: organizar o projeto em várias classes
         sec(FRT('Organizar em classes (Java)', 'Organizing into classes (Java)'), 'package org.firstinspires.ftc.teamcode.subsystems;   // pasta subsystems\nimport org.firstinspires.ftc.teamcode.subsystems.Garra;      // usar de outra pasta\nimport static org.firstinspires.ftc.teamcode.Constantes.*;   // constantes sem o nome da classe', [
@@ -13216,7 +13214,7 @@ function frBioRows() {
         top: FRT('em linha, uma roda de 4 pol. em cima, que aperta a peça contra uma placa; a peça passa reta, na direção em que vinha', 'in-line, one 4 in wheel on top that squeezes the piece against a plate; the piece goes straight through, in the direction it was moving')
     }[st];
     return [
-        tr('EH Motor port 0', FRT('INTAKE: rolo na frente, pendurado em dois braços que giram em volta do eixo de cima: a peça que entra o levanta (o NECTAR mais que o POLLEN), e ela sobe pela rampa até a correia. setPower(+1) puxa as peças para dentro; −1 cospe a que está na boca. Até 4 peças cabem no robô.', 'INTAKE: roller at the front, hanging from two arms that pivot around the top shaft: the piece coming in lifts it (a NECTAR more than a POLLEN), and goes up the ramp to the belt. setPower(+1) pulls pieces in; −1 spits out the one at the mouth. Up to 4 pieces fit in the robot.')),
+        tr('EH Motor port 0', FRT('INTAKE: rolo laranja na frente. setPower(+1) puxa as peças para dentro; −1 cospe a que está na boca. Até 3 peças cabem no robô.', 'INTAKE: orange roller at the front. setPower(+1) pulls pieces in; −1 spits out the one at the mouth. Up to 3 pieces fit in the robot.')),
         tr('EH Motor port 1', BBG.opts.shooter === 'back' ? FRT('MIDTAKE: esteira em rampa que leva as peças do intake até as rodas do lançador, em linha reta no fim. setPower(+1) leva para o lançador (é ela que "atira"); −1 devolve.', 'MIDTAKE: ramp belt that carries the pieces from the intake to the shooter wheels, straight at the end. setPower(+1) carries them to the shooter (it is what "fires"); −1 brings them back.')
             : FRT('MIDTAKE: esteira que leva as peças do intake até o lançador (no fim ela sobe na vertical, pelo furo da torreta). setPower(+1) leva para o lançador (é ela que "atira": a peça só sai quando a esteira a empurra no flywheel); −1 devolve.', 'MIDTAKE: belt that carries pieces from the intake to the shooter (at the end it rises vertically, through the turret hole). setPower(+1) carries them to the shooter (it is what "fires": a piece only leaves when the belt pushes it into the flywheel); −1 brings them back.')),
         two ? tr('EH Motor port 2', FRT('SHOOTER 2: o segundo motor do lançador (goBILDA 6000 rpm, 28 ticks por volta), montado de frente para o primeiro: use setDirection(REVERSE), senão a roda dele gira ao contrário e segura a peça. Com os pods de odometria instalados, o encoder desta porta é o do pod perpendicular: getVelocity lê o pod e setVelocity manda força máxima — use setPower neste motor.', 'SHOOTER 2: the second shooter motor (goBILDA 6000 rpm, 28 ticks per rev), mounted facing the first one: use setDirection(REVERSE), otherwise its wheel spins backwards and holds the piece. With the odometry pods installed, this port\'s encoder is the perpendicular pod: getVelocity reads the pod and setVelocity drives full power — use setPower on this motor.'))
@@ -13225,8 +13223,8 @@ function frBioRows() {
             `SHOOTER (${where}): ${desc}. goBILDA 6000 rpm motor (1:1), 28 ticks per rev (up to 2800 ticks/s). The piece leaves at 320 in/s × (rpm / 6000)${two ? ', using the average of both wheels' : ''} — NECTAR, heavier, at ${two ? '92' : '88'}% of that. Each shot drops the speed (${two ? '14% POLLEN, 20% NECTAR' : '18% POLLEN, 25% NECTAR'}); with setVelocity in RUN_USING_ENCODER it recovers faster.`)),
         turret ? tr('EH Servo port 0', FRT('TORRETA (Servo): 0,5 = lançador para a frente; 0,0 = 180° para a direita; 1,0 = 180° para a esquerda (360° no total, até 400°/s, com batente nas pontas: não dá a volta).', 'TURRET (Servo): 0.5 = shooter forward; 0.0 = 135° to the right; 1.0 = 135° to the left (270° in total, up to 400°/s).'))
             : tr('EH Servo port 0', FRT('(livre: o lançador deste robô é fixo)', '(free: this robot\'s shooter is fixed)')),
-        bbPick() !== 'arm' ? bbPickRow(1) : tr('EH Servo port 1', FRT('BRAÇO (Servo): 0,0 = recolhido; 1,0 = estendido 13 pol. para a frente, rente ao chão (curso inteiro em ~0,55 s).', 'ARM (Servo): 0.0 = retracted; 1.0 = extended 13 in forward, close to the floor (full stroke in ~0.55 s).')),
-        bbPick() !== 'arm' ? bbPickRow(2) : tr('EH Servo port 2', FRT('ROLO DO BRAÇO (Continuous Rotation Servo): setPower(+1) segura a peça que a ponta encosta (o POLLEN de baixo de uma FLOWER, pela abertura de retirada); −1 solta. Com o braço recolhido e o intake ligado, a peça passa para dentro do robô.', 'ARM ROLLER (Continuous Rotation Servo): setPower(+1) grabs the piece the tip touches (the bottom POLLEN of a FLOWER, through the retrieval opening); −1 releases it. With the arm retracted and the intake on, the piece goes into the robot.')),
+        tr('EH Servo port 1', FRT('BRAÇO (Servo): 0,0 = recolhido; 1,0 = estendido 13 pol. para a frente, rente ao chão (curso inteiro em ~0,55 s).', 'ARM (Servo): 0.0 = retracted; 1.0 = extended 13 in forward, close to the floor (full stroke in ~0.55 s).')),
+        tr('EH Servo port 2', FRT('ROLO DO BRAÇO (Continuous Rotation Servo): setPower(+1) segura a peça que a ponta encosta (o POLLEN de baixo de uma FLOWER, pela abertura de retirada); −1 solta. Com o braço recolhido e o intake ligado, a peça passa para dentro do robô.', 'ARM ROLLER (Continuous Rotation Servo): setPower(+1) grabs the piece the tip touches (the bottom POLLEN of a FLOWER, through the retrieval opening); −1 releases it. With the arm retracted and the intake on, the piece goes into the robot.')),
         st === 'hoodServo' ? tr('EH Servo port 3', FRT('CAPÔ MÓVEL (Servo): setPosition(0) = saída a 40°; setPosition(1) = 75° (linear entre os dois, a 70°/s). Ângulo menor = tiro mais deitado e mais longe com a mesma velocidade, até 45°.', 'MOVING HOOD (Servo): setPosition(0) = exit at 40°; setPosition(1) = 75° (linear in between, at 70°/s). Lower angle = flatter shot that goes farther at the same speed, down to 45°.'))
             : tr('EH Servo port 3', FRT('(livre)', '(free)'))
     ];
@@ -17135,11 +17133,6 @@ const BB_BOT = {
     cap: 4,                                                    // v26: até 4 peças no robô (POLLEN, NECTAR ou misturadas)
     turretRange: 360, turretSpeed: 400                       // v27: torreta de 360° (±180°), com batente nas pontas (não dá a volta)
 };
-// v27.14: intake pendurado (o rolo da frente gira em volta do eixo de cima), braço lateral e escova
-const BB_INTAKE = { pivot: { x: 8.6, z: 5.3 }, roller: { x: 10.3, z: 2.6 }, rollerR: 1.25, squeeze: 0.35, maxDeg: 55,
-    ramp: [{ x: 11.6, z: 0.1 }, { x: 8.6, z: 0.5 }, { x: 6.5, z: 2.35 }] };   // rampa: quase plana embaixo do rolo, depois sobe até a correia do midtake
-const BB_SWING = { px: 8.0, py: -8.6, z: 0.75, len: 5.7, speed: 2.2, a0: -180, range: 260 };   // eixo no lado direito, logo atrás do intake; pá rente ao chão
-const BB_BRUSH = { x: 11.2, y: 7.0, z: 0.6, r: 2.8 };                     // escova no canto esquerdo da frente
 const BBG = {
     opts: { shooter: 'turret', stype: 'hood', flower: 'full', preload: 2, start: 'hive', intake4: true },   // v27.1: intake4 = o intake empurra a fila (4 peças sem o midtake)
     balls: [], flowers: [[], [], [], []], hives: { red: { th: -30, w: 0 }, blue: { th: 30, w: 0 } },
@@ -17290,7 +17283,9 @@ function bbPathPoint(q) {
 // centro de uma peça guardada na posição q do caminho: na rampa ela fica apoiada na correia (um pouco acima da linha);
 // na subida vertical ela fica centrada no furo
 function bbStoredPos(pose, q, r) {
-    return bbToField(pose, bbStoredLocal(q, r, BBG.opts.shooter === 'back'));
+    const p = bbPathPoint(q), n = bbFeedPath().length - 1, q0 = (n - 1) / n;
+    const lift = r * 0.3 * Math.max(0, Math.min(1, (1 - q) / (1 - q0)));
+    return bbToField(pose, v3(p.x, p.y, p.z + lift));
 }
 function bbPlaceStored() {
     const pose = bbPose(), M = BBG.mech;
@@ -17497,7 +17492,7 @@ function bbMechStep(dt, pose) {
     if (BBG.opts.shooter !== 'turret') M.turret = 0;
     // braço (servo): 0 = recolhido, 1 = estendido (13 pol.), curso inteiro em cerca de 0,55 s
     if (c.arm !== null && c.arm !== undefined) M.armCmd = c.arm;
-    if (M.armCmd !== null && bbPick() === 'arm') {
+    if (M.armCmd !== null) {
         const d = M.armCmd - M.arm, step = BB_BOT.arm.speed * dt, nx = M.arm + (Math.abs(d) < step ? d : Math.sign(d) * step);
         // o braço para se a ponta for bater na parede do campo ou na coluna de trás de uma FLOWER
         const old = M.arm; M.arm = nx;
@@ -17545,7 +17540,7 @@ function bbMechStep(dt, pose) {
     if (M.held) {
         if (M.roller < -0.3) { const b = M.held; M.held = null; b.st = 'free'; b.at = null; b.v = v3(BBG.robotV.x, BBG.robotV.y, 0); b.rest = false; }
         else if (M.arm < 0.08 && M.intake > 0.3 && bbRobotCount() < BB_BOT.cap && !M.store.some(s => s.q < 0.3)) { const b = M.held; M.held = null; b.st = 'robot'; M.store.push({ b, q: 0 }); bbEvent('intake'); }
-    } else if (bbPick() === 'arm' && M.roller > 0.3 && M.arm > 0.15) {
+    } else if (M.roller > 0.3 && M.arm > 0.15) {
         const tip = bbArmTip(pose, 0);
         // POLLEN de baixo de uma FLOWER (pela abertura de retirada)
         for (let fi = 0; fi < 4 && !M.held; fi++) {
@@ -17556,9 +17551,6 @@ function bbMechStep(dt, pose) {
         // ou uma peça solta no chão, encostada na ponta
         if (!M.held) for (const b of BBG.balls) if (b.st === 'free' && b.p.z < b.r + 1 && Math.hypot(tip.x - b.p.x, tip.y - b.p.y) < b.r + 0.8) { b.st = 'arm'; M.held = b; break; }
     }
-    // v27.14: braço lateral ou escova, e o intake pendurado
-    bbPickStep(dt, pose, c);
-    bbIntakeLiftStep(M, pose, M.store, dt, BBG.opts.shooter === 'back', BBG.robotV);
 }
 // rotação que conta para a peça (rad/s): com dois motores, a média das duas rodas — se uma estiver parada ou girando
 // ao contrário, a peça sai devagar (ou nem sai)
@@ -18316,9 +18308,9 @@ function bbLoadExample() {
     const removed = [];
     files = files.filter(f => {
         if (f.name === name) return true;
-        const m = /\/\/ sandbox-example: (\w+)\/(\w+)(?:\/(\w+))?(?:\/(\w+))?/.exec(f.text || '');
+        const m = /\/\/ sandbox-example: (\w+)\/(\w+)(?:\/(\w+))?/.exec(f.text || '');
         if (!m) return true;
-        const su = { shooter: m[1], stype: m[2], cam: m[3] || 'c270', pick: m[4] || 'arm' }, same = [true, false].some(p => bbExampleJava(p, su) === f.text);
+        const su = { shooter: m[1], stype: m[2], cam: m[3] || 'c270' }, same = [true, false].some(p => bbExampleJava(p, su) === f.text);
         if (same) { removed.push(f.name); return false; }
         return true;
     });
@@ -18718,15 +18710,14 @@ function v3dChassis(add, M, chassis) {
 // flywheel de 4 pol. e capô curvo (ou dois flywheels de 3 pol., sem capô) e o motor;
 // braço em trilho linear. As peças impressas (placas do intake, guias do midtake, laterais do lançador, braço)
 // mantêm as cores de cada mecanismo.
-function v3dRobotParts(M, mount, stype, chassis, pick) {
+function v3dRobotParts(M, mount, stype, chassis) {
     if (mount === true || mount === undefined) mount = 'turret'; else if (mount === false) mount = 'fixed';
     stype = stype || 'hood';
     const parts = [], add = (faces, color, lbl, o) => parts.push(Object.assign({ faces, color, lbl }, o || {}));
     const C = V3_COL, Y = v3(0, 1, 0), Z = v3(0, 0, 1);
     // ---- chassi ----
     for (const sy of [-1, 1]) add(v3dLBox(v3(-0.4, sy * 6.5, 2.6), v3(16.6, 1.5, 1.9)), C.alu);            // perfis laterais (U-channel)
-    // v27.14: a travessa da frente fica baixa (topo a 1,55 pol.), embaixo da rampa do intake — antes ela ficava no caminho da peça
-    add(v3dLBox(v3(6.0, 0, 1.2), v3(1.5, 11.5, 0.7)), C.alu); add(v3dLBox(v3(-8.0, 0, 2.6), v3(1.2, 11.5, 1.9)), C.alu);
+    add(v3dLBox(v3(7.5, 0, 2.6), v3(1.5, 11.5, 1.9)), C.alu); add(v3dLBox(v3(-8.0, 0, 2.6), v3(1.2, 11.5, 1.9)), C.alu);
     add(v3dLBox(v3(-0.3, 0, 1.55), v3(15, 11.5, 0.2)), C.plate);                                                  // placa de baixo
     v3dChassis(add, M, chassis);
     // eletrônica: Control Hub (com o logo laranja) e bateria
@@ -18739,30 +18730,13 @@ function v3dRobotParts(M, mount, stype, chassis, pick) {
         add(v3dLBox(v3(-3.8, sy * 3.9, 11.55), v3(8.8, 2.2, 0.3)), C.alu);
     }
     add(v3dLBox(v3(-7.6, 0, 11.55), v3(1.6, 5.6, 0.3)), C.alu);
-    // ---- intake (v27.14: pendurado): o eixo de cima (com o motor) fica preso nas placas fixas; o rolo da frente fica em
-    // dois braços que giram em volta dele. O peso deixa o rolo apoiado no batente, e a peça que entra o levanta — o
-    // NECTAR (3,6 pol.) mais que o POLLEN (2,8 pol.). Embaixo, a rampa leva a peça do chão até a correia do midtake.
-    pick = pick || 'arm';
-    const ia = M ? M.intakeAng : 0, lf = M ? (M.intakeLift || 0) : 0, PV = BB_INTAKE.pivot;
-    const sw = p => { const dx = p.x - PV.x, dz = p.z - PV.z, c = Math.cos(lf), s = Math.sin(lf); return v3(PV.x + dx * c - dz * s, p.y, PV.z + dx * s + dz * c); };
-    for (const sy of [-1, 1]) {
-        add(v3dPlate([v3(6.4, sy * 7.75, 3.6), v3(9.8, sy * 7.75, 3.6), v3(9.8, sy * 7.75, 6.5), v3(6.4, sy * 7.75, 6.5)], Y, 0.3), C.intake, 'intake');   // placa fixa (segura o eixo de cima)
-        add(v3dLBox(v3(9.75, sy * 7.45, 3.75), v3(0.5, 0.35, 0.5)), C.hub, 'intake');                                                                       // batente
-        add(v3dPlate([v3(7.9, sy * 7.3, 5.9), v3(9.3, sy * 7.3, 6.0), v3(11.4, sy * 7.3, 3.4), v3(11.4, sy * 7.3, 1.7), v3(10.0, sy * 7.3, 1.5), v3(7.9, sy * 7.3, 4.6)].map(sw), Y, 0.3), C.intake, 'intake');   // braço que balança
-    }
-    const R0 = sw(v3(10.3, 0, 2.6));
-    add(v3dPrism(R0, Y, 0.25, 14.4, 6), C.hub, 'intake');
-    for (const y of [-6, -3, 0, 3, 6]) add(v3dPrism(v3(R0.x, y, R0.z), Y, 1.25, 1.1, 8, ia), C.intakeDk, 'intake');
-    add(v3dPrism(v3(PV.x, 0, PV.z), Y, 0.25, 15.8, 6), C.hub, 'intake');
-    for (const y of [-4.5, -1.5, 1.5, 4.5]) add(v3dPrism(v3(PV.x, y, PV.z), Y, 0.95, 1.0, 8, -ia), C.intakeDk, 'intake');
-    for (const sy of [-1, 1]) add(v3dSlab(v3(PV.x, sy * 6.9, PV.z), v3(R0.x, sy * 6.9, R0.z), Y, 0.3, 1.5), C.fly, 'intake');   // correias do eixo de cima até o rolo
-    // rampa: do chão, na frente, até o começo da correia do midtake (com o braço da frente, ela tem uma fenda no meio para ele)
-    const RP = BB_INTAKE.ramp;
-    for (let i = 0; i < RP.length - 1; i++) {
-        const a = RP[i], b = RP[i + 1];
-        if (pick === 'arm') for (const sy of [-1, 1]) add(v3dSlab(v3(a.x, sy * 4.6, a.z), v3(b.x, sy * 4.6, b.z), Y, 5.6, 0.2), C.plate, 'intake');
-        else add(v3dSlab(v3(a.x, 0, a.z), v3(b.x, 0, b.z), Y, 14.6, 0.2), C.plate, 'intake');
-    }
+    // ---- intake: placas laranja, dois eixos com rodas flexíveis e o motor ----
+    for (const sy of [-1, 1]) add(v3dPlate([v3(6.8, sy * 7.55, 1.4), v3(11.4, sy * 7.55, 1.4), v3(11.4, sy * 7.55, 4.0), v3(9.4, sy * 7.55, 6.4), v3(6.8, sy * 7.55, 6.4)], Y, 0.3), C.intake, 'intake');
+    const ia = M ? M.intakeAng : 0;
+    add(v3dPrism(v3(10.3, 0, 2.6), Y, 0.25, 15, 6), C.hub, 'intake');
+    for (const y of [-6, -3, 0, 3, 6]) add(v3dPrism(v3(10.3, y, 2.6), Y, 1.25, 1.1, 8, ia), C.intakeDk, 'intake');
+    add(v3dPrism(v3(8.6, 0, 5.3), Y, 0.25, 15, 6), C.hub, 'intake');
+    for (const y of [-4.5, -1.5, 1.5, 4.5]) add(v3dPrism(v3(8.6, y, 5.3), Y, 0.95, 1.0, 8, -ia), C.intakeDk, 'intake');
     add(v3dPrism(v3(7.6, -5.4, 5.3), Y, 0.65, 2.4, 8), C.motor, 'intake');
     // ---- midtake: correia preta em rampa entre roletes, guias verde-água; no fim, a subida vertical (ou, no lançador
     // em linha fixo atrás, a rampa continua reta até as rodas) ----
@@ -18776,17 +18750,9 @@ function v3dRobotParts(M, mount, stype, chassis, pick) {
     const ma = M ? M.midAng : 0;
     if (!back) {
         // subida: guias dos lados e duas rodas flexíveis (frente e trás) que empurram a peça para cima, até o ponto F
-        // v27.14: a subida é um duto fechado — correia atrás da peça (puxa para cima), placas dos dois lados e, na frente,
-        // acima da entrada da rampa, uma roda flexível que aperta a peça contra a correia
-        const Fp = P[nP - 1], xb = Fp.x - 2.05, z0 = P[nP - 2].z - 2.3, z1 = 12.0;
-        add(v3dSlab(v3(xb, 0, z0), v3(xb, 0, z1), Y, 4.0, 0.25), C.midDk, 'midtake');                                   // correia de trás
-        for (const z of [z0 + 0.3, z1 - 0.3]) add(v3dPrism(v3(xb - 0.3, 0, z), Y, 0.42, 4.3, 6, ma), C.hub, 'midtake');  // polias
-        for (const sy of [-1, 1]) {
-            add(v3dPlate([v3(xb - 0.2, sy * 2.3, z0), v3(Fp.x, sy * 2.3, z0), v3(-0.2, sy * 2.3, P[nP - 3].z - 2.5), v3(-0.2, sy * 2.3, 10.6), v3(-1.6, sy * 2.3, z1), v3(xb - 0.2, sy * 2.3, z1)], Y, 0.25), C.mid, 'midtake');   // placas dos lados
-            for (const z of [z0 + 1.2, z1 - 0.8]) add(v3dSlab(v3(xb - 0.5, sy * 1.6, z), v3(-7.4, sy * 4.9, z), Z, 0.6, 0.3), C.aluDk, 'midtake');   // suportes até as colunas
-        }
-        add(v3dPrism(v3(Fp.x + 2.25, 0, 11.3), Y, 0.95, 3.4, 8, ma), C.mid, 'midtake');                                // roda flexível da frente
-        add(v3dPrism(v3(Fp.x + 2.25, 0, 11.3), Y, 0.18, 4.8, 6), C.hub, 'midtake');
+        const Fp = P[nP - 1];
+        for (const sy of [-1, 1]) add(v3dSlab(v3(Fp.x, sy * 2.3, P[nP - 2].z - 0.6), v3(Fp.x, sy * 2.3, 11.6), v3(1, 0, 0), 3.0, 0.25), C.mid, 'midtake');
+        for (const sx of [-1, 1]) add(v3dPrism(v3(Fp.x + sx * 2.2, 0, 11.0), Y, 0.6, 3.4, 8, sx * ma), C.mid, 'midtake');
     }
     // ---- lançador: na torreta, fixo na frente ou fixo atrás ----
     const T = BB_BOT.turret, g = bbShooterGeom(stype, M && stype === 'hoodServo' ? M.hoodA : undefined, mount);
@@ -18864,28 +18830,6 @@ function v3dRobotParts(M, mount, stype, chassis, pick) {
         }
         if (back) for (const sy of [-1, 1]) add(v3dSlab(L(F.a, sy * 2.95, F.z - 1.0), L(G.a, sy * 2.95, G.z - 1.0), N3, 2.0, 0.25), C.mid, 'midtake');   // guias até as rodas
     }
-    // ---- v27.14: retirada do POLLEN — braço lateral que varre, ou escova giratória ----
-    if (pick === 'swing') {
-        const S = BB_SWING, th = bbSwingDeg(M ? (M.swing || 0) : 0) * Math.PI / 180, d = v3(Math.cos(th), Math.sin(th), 0);
-        const tip = v3(S.px + S.len * d.x, S.py + S.len * d.y, S.z);
-        add(v3dPrism(v3(S.px, S.py, S.z + 1.2), Z, 0.4, 2.6, 8), C.alu, 'arm');                                          // eixo vertical
-        add(v3dLBox(v3(S.px, S.py, S.z + 2.9), v3(1.6, 1.1, 0.8)), C.cam, 'arm');                                         // servo
-        add(v3dSlab(v3(S.px, S.py, 2.6), v3(6.6, -7.25, 2.6), Z, 0.8, 0.3), C.aluDk, 'arm');                               // suporte até o chassi
-        add(v3dSlab(v3(S.px, S.py, S.z + 0.3), v3add(tip, v3mul(d, -1.0)), v3(-d.y, d.x, 0), 0.9, 0.35), C.arm, 'arm');   // braço (barra chata)
-        add(v3dSlab(v3add(tip, v3mul(d, -1.6)), tip, Z, 1.0, 0.45), C.armDk, 'arm');                                        // pá na ponta (em pé)
-        return parts;
-    }
-    if (pick === 'brush') {
-        const B = BB_BRUSH, ang = M ? (M.brushAng || 0) : 0, L = [];
-        add(v3dPrism(v3(B.x, B.y, B.z), Z, B.r, 0.25, 16, ang), C.arm, 'arm', { alpha: 0.35 });                           // disco das cerdas
-        for (let k = 0; k < 16; k++) { const a = ang + k * Math.PI / 8; L.push({ a: v3(B.x + Math.cos(a) * 0.7, B.y + Math.sin(a) * 0.7, B.z + 0.1), b: v3(B.x + Math.cos(a + 0.25) * B.r, B.y + Math.sin(a + 0.25) * B.r, B.z - 0.15), color: V3_COL.armDk }); }
-        add([], null, null, { lines: L });                                                                                  // cerdas
-        add(v3dPrism(v3(B.x, B.y, B.z + 0.3), Z, 0.7, 0.4, 8, ang), C.armDk, 'arm');                                        // cubo
-        add(v3dPrism(v3(B.x, B.y, B.z + 0.8), Z, 0.15, 0.8, 6), C.hub, 'arm');                                              // eixo
-        add(v3dLBox(v3(B.x, B.y, B.z + 1.6), v3(1.6, 1.0, 0.9)), C.cam, 'arm');                                             // servo (rotação contínua)
-        add(v3dSlab(v3(B.x, B.y, B.z + 1.6), v3(9.0, 7.6, 3.6), Z, 0.6, 0.3), C.aluDk, 'arm');                             // suporte até a placa fixa do intake
-        return parts;
-    }
     // ---- braço: trilho de alumínio fixo, estágio rosa que corre, garra e rolo na ponta ----
     const ext = M ? M.arm : 0, A = BB_BOT.arm, tipX = A.x0 + ext * A.len;
     add(v3dLBox(v3(5.6, 0, 1.15), v3(6.6, 1.5, 0.55)), C.aluDk, 'arm');                                         // estágio fixo
@@ -18900,7 +18844,7 @@ function v3dRobot(R, pose, what) {
     const M = typeof BBG !== 'undefined' ? BBG.mech : null, mount = typeof BBG === 'undefined' ? 'turret' : bbOptsFix().shooter, stype = typeof BBG === 'undefined' ? 'hood' : bbStype();
     const h = pose.h * Math.PI / 180, ch = Math.cos(h), sh = Math.sin(h);
     const W = q => v3(pose.x + q.x * ch - q.y * sh, pose.y + q.x * sh + q.y * ch, q.z);
-    const parts = v3dRobotParts(typeof bbActive === 'function' && bbActive() ? M : null, mount, stype, undefined, typeof bbPick === 'function' ? bbPick() : 'arm'), glass = [];
+    const parts = v3dRobotParts(typeof bbActive === 'function' && bbActive() ? M : null, mount, stype), glass = [];
     for (const part of parts) { if (part.alpha) { glass.push(part); continue; } for (const f of part.faces) R.poly(f.map(W), part.color); for (const l of part.lines || []) R.line(W(l.a), W(l.b), l.color, 1); }
     // laterais transparentes do lançador (policarbonato): por último, para mostrar o flywheel, o capô e a peça por dentro
     for (const part of glass) {
@@ -19207,8 +19151,7 @@ function v3dGameInfo() {
         ...(two ? [['Motor 2', `${Math.round(rpm2)} rpm (${pt ? 'alvo' : 'target'} ${Math.round(tgt2)}${M.flyClosed2 ? ', setVelocity' : ''})${rpm2 < -30 ? (pt ? ' · girando ao contrário (falta REVERSE?)' : ' · spinning backwards (missing REVERSE?)') : ''}`]] : []),
         [pt ? 'Saída' : 'Exit', `${Math.round(bbExitSpeed(bbShooterW(), 'pollen'))} ${pt ? 'pol/s (POLLEN)' : 'in/s (POLLEN)'}`],
         [pt ? 'Torreta' : 'Turret', BBG.opts.shooter === 'turret' ? (M.turret >= 0 ? '+' : '') + M.turret.toFixed(0) + '°' : BBG.opts.shooter === 'back' ? (pt ? 'fixo atrás' : 'fixed rear') : (pt ? 'fixo na frente' : 'fixed front')],
-        bbPickStatus(pt) || [`<i class="v3d-dot" style="background:rgb(${V3_COL.arm})"></i>${pt ? 'Braço' : 'Arm'}`, Math.round(M.arm * 100) + '% · ' + (M.held ? (pt ? 'segurando 1 POLLEN' : 'holding 1 POLLEN') : (pt ? 'vazio' : 'empty'))],
-        bbIntakeStatus(pt),
+        [`<i class="v3d-dot" style="background:rgb(${V3_COL.arm})"></i>${pt ? 'Braço' : 'Arm'}`, Math.round(M.arm * 100) + '% · ' + (M.held ? (pt ? 'segurando 1 POLLEN' : 'holding 1 POLLEN') : (pt ? 'vazio' : 'empty'))],
         [pt ? 'No robô' : 'In the robot', M.store.length + ' / ' + BB_BOT.cap + ' · ' + (pt ? 'lançadas' : 'shots') + ' ' + BBG.shots],
         ['PARK', (() => { const p = bbParked(); return p.length ? (pt ? 'sim — LOADING ZONE ' : 'yes — ') + p.map(sd => sd === 'red' ? (pt ? 'vermelha' : 'red') : (pt ? 'azul' : 'blue')).join(' + ') + (pt ? '' : ' LOADING ZONE') : (pt ? 'não' : 'no'); })()],
         [pt ? 'HIVE vermelha' : 'Red HIVE', (pt ? 'plateia ' : 'audience ') + cell('red-aud') + ' · ' + (pt ? 'oposta ' : 'far ') + cell('red-far') + ' · ' + (pt ? 'para virar ' : 'to tip ') + Math.min(100, Math.round(bbTipUnits('red') * 100)) + '%'],
@@ -20796,7 +20739,7 @@ function mtPathPoint(q) {
 function mtPlaceStored() {
     for (const n of MATCH.npcs) {
         const pose = { x: n.x, y: n.y, h: n.h };
-        for (const s of n.store) { s.b.p = bbToField(pose, bbStoredLocal(s.q, s.b.r, false)); s.b.v = v3(0, 0, 0); }
+        for (const s of n.store) { const p = mtPathPoint(s.q); s.b.p = bbToField(pose, v3(p.x, 0, p.z + s.b.r * 0.3)); s.b.v = v3(0, 0, 0); }
         if (n.held) n.held.p = bbToField(pose, v3(BB_BOT.arm.x0 + n.arm * BB_BOT.arm.len + n.held.r, 0, BB_BOT.arm.z));
     }
 }
@@ -20948,9 +20891,9 @@ function mtPickTarget(n) {
     }
     if (mtLv(n).flower) BB.flowers.forEach((fl, fi) => {
         if (!BBG.flowers[fi].length || fClaim.has(fi) || BBG.flowers[fi][0].kind !== 'pollen') return;
-        const sp = mtFlowerSpot(n, fl), x = sp.x, y = sp.y;   // v27.14: depende do mecanismo de retirada do robô
+        const d = fl.yaw * Math.PI / 180, x = fl.x + Math.cos(d) * 19.5, y = fl.y + Math.sin(d) * 19.5;
         const c = Math.hypot(x - n.x, y - n.y) + 30 + Math.random() * 6;
-        if (c < bc) { bc = c; best = { k: 'flower', fi, x, y, h: sp.h, t0: BBG.t }; }
+        if (c < bc) { bc = c; best = { k: 'flower', fi, x, y, h: mtNorm(fl.yaw + 180), t0: BBG.t }; }
     });
     return best;
 }
@@ -21018,7 +20961,6 @@ function mtRunTask(n, dt) {
             if ((!stack.length && !n.held) || n.store.length + (n.held ? 1 : 0) >= BB_BOT.cap || BBG.t - T.t0 > 25) { n.task = null; n.arm = 0; return; }
             if (!T.at) { if (mtGoto(n, dt, T.x, T.y, T.h, 1.2, 3)) { T.at = true; n.armT = 0; } if (n.stuck > 3 || n.jam) { n.task = null; n.stuck = 0; n.jam = false; } return; }
             mtStop(n, dt);
-            if (n.pick === 'swing' || n.pick === 'brush') { T.working = true; mtFlowerWork(n, dt, T, stack); return; }   // v27.14
             // ciclo do braço: estende (0,5 s), pega, recolhe (0,5 s) e o intake puxa a peça
             n.armT += dt;
             const c = n.armT;
@@ -21216,7 +21158,7 @@ function mtDraw3D(R, what) {
             if (sp.x < -rpx || sp.y < -rpx || sp.x > R.W + rpx || sp.y > R.H + rpx) continue;
             if (rpx < 28) { mtDrawRobot(R, n, mtSimpleParts(n.side)); continue; }
         }
-        mtDrawRobot(R, n, v3dRobotParts(n.mech, 'fixed', 'hood', 'mecanum', n.pick).concat(mtAllianceParts(n.side)));
+        mtDrawRobot(R, n, v3dRobotParts(n.mech, 'fixed', 'hood', 'mecanum').concat(mtAllianceParts(n.side)));
     }
     if (what && what.robot && !what.skipRobot) mtDrawRobot(R, what.robot, mtAllianceParts(MATCH.side));
 }
@@ -22879,18 +22821,6 @@ function mtBlocker(n, dx, dy) {
      e você confere a medida no painel "Montagem dos pods".
    ===================================================================== */
 const FR_MNT_STD = { xy: -84, yx: -168, p0: 152.4, p1: -152.4, px: -139.7 };   // pinX.y, pinY.x, E0.y, E1.y, E2.x (mm)
-// v27.14: sem offset (só para testes): os pods no centro de rotação. Nos três pods, os paralelos continuam
-// separados (sem distância entre eles não dá para calcular o giro); só o perp vai para o centro.
-const FR_MNT_ZERO = { xy: 0, yx: 0, p0: 152.4, p1: -152.4, px: 0 };
-// de onde vêm as posições padrão (texto da ficha e do painel)
-function frMntSource() {
-    const m = FR_HW.mnt || 'std';
-    if (m === 'zero') return FRT('Sem offset: só para testes — nenhum robô real tem os pods exatamente no centro de rotação.', 'No offset: for tests only — no real robot has its pods exactly on the center of rotation.');
-    if (m === 'custom') return FRT('Posição personalizada (digitada na montagem do robô).', 'Custom position (typed in the robot assembly).');
-    if (m === 'random') return FRT('Posição aleatória.', 'Random position.');
-    return frHas.pinpoint() ? FRT('Padrão goBILDA: os valores do exemplo oficial do Pinpoint (SensorGoBildaPinpointExample, setOffsets(-84.0, -168.0, DistanceUnit.MM)), medidos no chassi Strafer da goBILDA.', 'goBILDA standard: the values of the official Pinpoint example (SensorGoBildaPinpointExample, setOffsets(-84.0, -168.0, DistanceUnit.MM)), measured on the goBILDA Strafer chassis.')
-        : FRT('Padrão do Sandbox: paralelos a 6 pol. (152,4 mm) de cada lado e perp a 5,5 pol. (139,7 mm) atrás do centro (não há um padrão oficial para três pods).', 'Sandbox standard: parallels 6 in (152.4 mm) to each side and perp 5.5 in (139.7 mm) behind center (there is no official standard for three pods).');
-}
 const FR_MNT_TOL = 2;   // mm: tolerância para a medida ser aceita
 function frMntRandom() {
     const r = (a, b) => Math.round((a + Math.random() * (b - a)) * 10) / 10;
@@ -22902,7 +22832,6 @@ function frMntGeo(hw) {
     const m = hw.mnt || 'std';
     if (m === 'random') { if (!hw.rnd) hw.rnd = frMntRandom(); return hw.rnd; }
     if (m === 'custom') return Object.assign({}, FR_MNT_STD, hw.geo || {});
-    if (m === 'zero') return FR_MNT_ZERO;
     return FR_MNT_STD;
 }
 function frApplyMount() {
@@ -22929,14 +22858,14 @@ function frMntDesc(kind) {
     if (kind === 'pinpoint') {
         const x = hid ? q : frMntSide(g.xy, FRT('à ESQUERDA do centro', 'to the LEFT of center'), FRT('à DIREITA do centro', 'to the RIGHT of center'));
         const y = hid ? q : frMntSide(g.yx, FRT('À FRENTE do centro', 'AHEAD of center'), FRT('ATRÁS do centro', 'BEHIND center'));
-        return frMntSource() + ' ' + (pt ? `goBILDA Pinpoint V2. Pod X (mede para a frente): ${x}. Pod Y (mede para o lado): ${y}, montado invertido (a contagem bruta diminui quando o robô vai para a esquerda).`
-            : `goBILDA Pinpoint V2. X pod (measures forward): ${x}. Y pod (measures sideways): ${y}, mounted reversed (the raw count decreases when the robot moves left).`);
+        return pt ? `goBILDA Pinpoint V2. Pod X (mede para a frente): ${x}. Pod Y (mede para o lado): ${y}, montado invertido (a contagem bruta diminui quando o robô vai para a esquerda).`
+            : `goBILDA Pinpoint V2. X pod (measures forward): ${x}. Y pod (measures sideways): ${y}, mounted reversed (the raw count decreases when the robot moves left).`;
     }
     const p0 = hid ? q : frMntSide(g.p0, FRT('à esquerda', 'left'), FRT('à direita', 'right'));
     const p1 = hid ? q : frMntSide(g.p1, FRT('à esquerda', 'left'), FRT('à direita', 'right'));
     const px = hid ? q : frMntSide(g.px, FRT('à frente', 'ahead'), FRT('atrás', 'behind'));
-    return frMntSource() + ' ' + (pt ? `Encoders dos pods nas portas de motor (sem motor ligado): porta 0 = par0, paralelo, ${p0}; porta 1 = par1, paralelo, ${p1}, montado espelhado (conta negativo para a frente); porta 2 = perp, perpendicular, ${px} (positivo para a esquerda).`
-        : `Pod encoders on the motor ports (no motor attached): port 0 = par0, parallel, ${p0}; port 1 = par1, parallel, ${p1}, mounted mirrored (counts negative going forward); port 2 = perp, perpendicular, ${px} (positive to the left).`);
+    return pt ? `Encoders dos pods nas portas de motor (sem motor ligado): porta 0 = par0, paralelo, ${p0}; porta 1 = par1, paralelo, ${p1}, montado espelhado (conta negativo para a frente); porta 2 = perp, perpendicular, ${px} (positivo para a esquerda).`
+        : `Pod encoders on the motor ports (no motor attached): port 0 = par0, parallel, ${p0}; port 1 = par1, parallel, ${p1}, mounted mirrored (counts negative going forward); port 2 = perp, perpendicular, ${px} (positive to the left).`;
 }
 // seletor "Montagem dos pods" junto dos outros da montagem
 (function () {
@@ -22950,7 +22879,7 @@ function frMntDesc(kind) {
             hw.mnt = e.target.value; if (hw.mnt === 'random') { hw.rnd = frMntRandom(); hw.shown = false; }
             FRS.save(); frSetHardware(hw); frRobotVisualHw(); frSideTab('robot');
             if (hw.mnt === 'random') toast(FRT('Pods montados em posições sorteadas e ocultas: meça os offsets com o seu código', 'Pods mounted at random, hidden positions: measure the offsets with your code'));
-        } }, ...[['std', (hw.odo === 'pods' ? FRT('padrão do Sandbox', 'Sandbox standard') : FRT('padrão goBILDA (−84, −168 mm)', 'goBILDA standard (−84, −168 mm)'))], ['zero', FRT('sem offset (só testes)', 'no offset (tests only)')], ['custom', FRT('personalizada', 'custom')], ['random', FRT('aleatória (oculta)', 'random (hidden)')]].map(([v, t]) => h('option', { value: v, text: t, selected: (hw.mnt || 'std') === v ? true : null })))));
+        } }, ...[['std', FRT('padrão', 'standard')], ['custom', FRT('personalizada', 'custom')], ['random', FRT('aleatória (oculta)', 'random (hidden)')]].map(([v, t]) => h('option', { value: v, text: t, selected: (hw.mnt || 'std') === v ? true : null })))));
         return el;
     };
 })();
@@ -22981,12 +22910,10 @@ function frMntPanelEl() {
     const fmt = v => (Math.round(v * 10) / 10).toFixed(1);
     const fmtL = v => frLangPt() ? fmt(v).replace('.', ',') : fmt(v);
     const keys = pp ? [['xy', FRT('Pod X: deslocamento lateral (esquerda +)', 'X pod: sideways offset (left +)'), 'setOffsets x'], ['yx', FRT('Pod Y: deslocamento para a frente (frente +)', 'Y pod: forward offset (forward +)'), 'setOffsets y']]
-        : [['p0', FRT('par0: posição lateral (esquerda +)', 'par0: sideways position (left +)'), 'par0 y'], ['p1', FRT('par1: posição lateral (esquerda +)', 'par1: sideways position (left +)'), 'par1 y'], ['px', FRT('perp: posição para a frente (frente +)', 'perp: forward position (forward +)'), 'perp x']];
+        : [['p0', FRT('par0: posição lateral (esquerda +)', 'par0: sideways position (left +)'), 'y'], ['p1', FRT('par1: posição lateral (esquerda +)', 'par1: sideways position (left +)'), 'y'], ['px', FRT('perp: posição para a frente (frente +)', 'perp: forward position (forward +)'), 'x']];
     const box = h('div', { class: 'fr-mnt' }, h('h4', { text: FRT('Montagem dos pods', 'Pod mounting') }));
-    if (m === 'std' || m === 'zero') {
-        const g = frMntGeo();
-        box.append(h('p', { text: frMntSource() }), h('p', { class: 'fr-mnt-rev', text: keys.map(([k, , n]) => n + ' = ' + fmtL(g[k]) + ' mm').join(' · ') }));
-        box.append(h('p', { text: FRT('Posição fixa. Em "Posição dos pods" (montagem do robô), escolha "personalizada" para digitar as posições do seu robô real, ou "aleatória (oculta)" para o desafio de medir o offset.', 'Fixed position. In "Pod position" (robot assembly), choose "custom" to type the positions of your real robot, or "random (hidden)" for the offset-measuring challenge.') }));
+    if (m === 'std') {
+        box.append(h('p', { text: FRT('Posição padrão. Em "Posição dos pods" (montagem do robô), escolha "personalizada" para digitar as posições do seu robô real, ou "aleatória (oculta)" para o desafio de medir o offset.', 'Standard position. In "Pod position" (robot assembly), choose "custom" to type the positions of your real robot, or "random (hidden)" for the offset-measuring challenge.') }));
         return box;
     }
     if (m === 'custom') {
@@ -23038,280 +22965,6 @@ function frMntPanelEl() {
         const el = base.apply(this, arguments);
         try { if (frSens() && FR_HW.odo !== 'none') el.append(frMntPanelEl()); } catch (e) { console.warn('montagem dos pods:', e); }
         return el;
-    };
-})();
-
-/* =====================================================================
-   v27.14: INTAKE PENDURADO, DUTO DA SUBIDA E TRÊS JEITOS DE TIRAR O POLLEN
-   1) O rolo da frente do intake fica em dois braços que giram em volta do
-      eixo de cima. O peso o deixa no batente; a peça que entra o levanta
-      até passar por baixo dele — o NECTAR (3,6 pol.) mais que o POLLEN
-      (2,8 pol.). As peças andam apoiadas na rampa e na correia.
-   2) A retirada do POLLEN das FLOWERs pode ser feita pelo braço da frente
-      (como antes), por um braço lateral que varre a frente do robô (servo
-      da porta 1) ou por uma escova giratória no canto (servo de rotação
-      contínua da porta 2). Os outros robôs da partida sorteiam um dos três.
-   ===================================================================== */
-const BB_PICKS = ['arm', 'swing', 'brush'];
-function bbPick() { const p = BBG.opts.pick; return BB_PICKS.includes(p) ? p : 'arm'; }
-// ângulo do braço lateral (graus, a partir da frente, esquerda +): 0 = recolhido ao lado do robô (−180°),
-// 0,35 = aberto para a direita (−90°), 1 = varrido até a frente do intake (+80°)
-function bbSwingDeg(p) { return BB_SWING.a0 + BB_SWING.range * Math.max(0, Math.min(1, p)); }
-// centro da peça guardada na posição q do caminho, no referencial do robô: do chão, na frente do rolo, sobe a rampa do
-// intake; depois anda apoiada na correia do midtake; no fim, sobe centrada no duto (ou, no lançador atrás, segue a correia)
-function bbStoredLocal(q, r, back) {
-    const P = back ? BB_BOT.pathBack : BB_BOT.path, n = P.length - 1, q1 = 1 / n, q0 = back ? 1 : (n - 1) / n;
-    q = Math.max(0, Math.min(1, q));
-    if (q < q1) {
-        const RP = BB_INTAKE.ramp, x = 12.0 + (RP[RP.length - 1].x - 12.0) * (q / q1);
-        if (x >= RP[0].x) return v3(x, 0, r);
-        let k = 0; while (k < RP.length - 2 && x < RP[k + 1].x) k++;
-        const a = RP[k], b = RP[k + 1], sl = Math.atan2(b.z - a.z, a.x - b.x);
-        return v3(x, 0, a.z + (a.x - x) * Math.tan(sl) + 0.1 + r / Math.cos(sl));
-    }
-    const t = q * n, i = Math.min(n - 1, Math.floor(t)), f = t - i, a = P[i], b = P[i + 1];
-    const x = a.x + (b.x - a.x) * f, zp = a.z + (b.z - a.z) * f;
-    if (q >= q0) return v3(x, 0, zp);
-    const sl = Math.atan2(b.z - a.z, a.x - b.x), zb = zp - 1.9 + 0.13 + r / Math.cos(sl);
-    // perto da subida, a peça passa da correia para o centro do duto
-    const k = back ? 0 : Math.max(0, Math.min(1, (q - (q0 - 0.06)) / 0.06));
-    return v3(x, 0, zb + (zp - zb) * k);
-}
-// rolo da frente na inclinação φ (rad) dos braços do intake
-function bbIntakeRoller(phi) {
-    const PV = BB_INTAKE.pivot, dx = BB_INTAKE.roller.x - PV.x, dz = BB_INTAKE.roller.z - PV.z, c = Math.cos(phi), s = Math.sin(phi);
-    return { x: PV.x + dx * c - dz * s, z: PV.z + dx * s + dz * c };
-}
-// a menor inclinação em que o rolo não entra na peça (as rodas flexíveis amassam 0,35 pol.)
-function bbIntakeNeed(bx, bz, r) {
-    const R = r + BB_INTAKE.rollerR - BB_INTAKE.squeeze;
-    for (let a = 0; a <= BB_INTAKE.maxDeg; a += 1.5) {
-        const p = bbIntakeRoller(a * Math.PI / 180);
-        if (Math.hypot(p.x - bx, p.z - bz) >= R) return a * Math.PI / 180;
-    }
-    return BB_INTAKE.maxDeg * Math.PI / 180;
-}
-// o intake pendurado: sobe empurrado pelas peças que passam por baixo do rolo; desce pelo peso
-function bbIntakeLiftStep(M, pose, store, dt, back) {
-    let need = 0;
-    for (const s of store) if (s.q < 0.3) { const p = bbStoredLocal(s.q, s.b.r, back); need = Math.max(need, bbIntakeNeed(p.x, p.z, s.b.r)); }
-    const h = pose.h * Math.PI / 180, ch = Math.cos(h), sh = Math.sin(h);
-    for (const b of BBG.balls) {
-        if (b.st !== 'free' || b.p.z > 5) continue;
-        const dx = b.p.x - pose.x, dy = b.p.y - pose.y; if (Math.abs(dx) > 16 || Math.abs(dy) > 16) continue;
-        const lx = dx * ch + dy * sh, ly = -dx * sh + dy * ch;
-        if (lx > 8 && lx < 14.5 && Math.abs(ly) < BB_BOT.intake.halfW) need = Math.max(need, bbIntakeNeed(lx, b.p.z, b.r));
-    }
-    const cur = M.intakeLift || 0;
-    M.intakeLiftNeed = need;
-    M.intakeLift = need > cur ? Math.min(need, cur + 30 * dt) : Math.max(need, cur - 3.5 * dt);   // a peça empurra o rolo na hora; ele desce pelo peso
-}
-// solta uma peça no chão, do lado de fora da FLOWER, rolando para a boca do intake
-function bbPickRelease(b, flower, pose, vel, speed) {
-    const mouth = bbToField(pose, v3(11.8, 0, 0)), from = flower || b.p;
-    let dx = mouth.x - from.x, dy = mouth.y - from.y; const d = Math.hypot(dx, dy) || 1; dx /= d; dy /= d;
-    const off = flower ? 2.8 + b.r + 0.15 : 0;
-    b.st = 'free'; b.at = null; b.rest = false; b.shot = null;
-    b.p = v3(from.x + dx * off, from.y + dy * off, b.r);
-    b.v = v3(dx * speed + (vel ? vel.x : 0), dy * speed + (vel ? vel.y : 0), 0);
-}
-// braço lateral: segue o servo; varrendo para a frente, a pá tira o POLLEN de baixo de uma FLOWER (um por varrida) e
-// empurra as peças soltas que encontrar
-function bbSwingMove(M, tgt, dt, pose, vel) {
-    const S = BB_SWING, p0 = M.swing || 0, d = tgt - p0, st = S.speed * dt;
-    let p1 = p0 + (Math.abs(d) < st ? d : Math.sign(d) * st);
-    const tipAt = p => { const a = (pose.h + bbSwingDeg(p)) * Math.PI / 180, o = bbToField(pose, v3(S.px, S.py, 0)); return v3(o.x + Math.cos(a) * S.len, o.y + Math.sin(a) * S.len, S.z); };
-    let tip = tipAt(p1);
-    if (Math.abs(tip.x) > 71.5 || Math.abs(tip.y) > 71.5) { p1 = p0; tip = tipAt(p0); M.swingStuck = true; } else M.swingStuck = false;
-    M.swing = p1;
-    const w = (p1 - p0) / dt * S.range * Math.PI / 180;                     // rad/s (positivo = varrendo para a frente)
-    if (p1 < 0.4) M.swDone = false;
-    if (w > 0.5) {
-        const a = (pose.h + bbSwingDeg(p1)) * Math.PI / 180, tv = v3(-Math.sin(a) * w * S.len, Math.cos(a) * w * S.len, 0);
-        if (!M.swDone) for (let fi = 0; fi < 4; fi++) {
-            const stack = BBG.flowers[fi]; if (!stack.length) continue;
-            const b = stack[0];
-            if (Math.hypot(tip.x - b.p.x, tip.y - b.p.y) < b.r + 0.9 && Math.abs(tip.z - b.p.z) < 2.2) {
-                stack.shift(); bbPickRelease(b, BB.flowers[fi], pose, vel, 28); M.swDone = true; bbEvent('flower'); break;
-            }
-        }
-        for (const b of BBG.balls) if (b.st === 'free' && b.p.z < b.r + 0.6 && Math.hypot(tip.x - b.p.x, tip.y - b.p.y) < b.r + 0.6) { b.v = v3(tv.x * 0.8, tv.y * 0.8, 0); b.rest = false; }
-    }
-}
-// escova: gira com o servo; girando para dentro, puxa o POLLEN de baixo de uma FLOWER (um a cada 0,6 s) e varre as peças
-// soltas ao alcance para a boca do intake
-function bbBrushMove(M, pw, dt, pose, vel) {
-    const B = BB_BRUSH;
-    M.brushPow = pw; M.brushAng = (M.brushAng || 0) - pw * 14 * dt;
-    M.brushCool = Math.max(0, (M.brushCool || 0) - dt);
-    if (pw < 0.3) return;
-    const c = bbToField(pose, v3(B.x, B.y, 0)), mouth = bbToField(pose, v3(11.8, 0, 0));
-    if (!M.brushCool) for (let fi = 0; fi < 4; fi++) {
-        const stack = BBG.flowers[fi]; if (!stack.length) continue;
-        const b = stack[0];
-        if (Math.hypot(c.x - b.p.x, c.y - b.p.y) < B.r + b.r * 0.6 && b.p.z < 3.5) { stack.shift(); bbPickRelease(b, BB.flowers[fi], pose, vel, 22 * pw); M.brushCool = 0.6; bbEvent('flower'); break; }
-    }
-    for (const b of BBG.balls) {
-        if (b.st !== 'free' || b.p.z > b.r + 0.6) continue;
-        if (Math.hypot(c.x - b.p.x, c.y - b.p.y) > B.r + b.r * 0.5) continue;
-        let dx = mouth.x - b.p.x, dy = mouth.y - b.p.y; const d = Math.hypot(dx, dy) || 1;
-        b.v = v3(dx / d * 22 * pw + (vel ? vel.x : 0), dy / d * 22 * pw + (vel ? vel.y : 0), 0); b.rest = false;
-    }
-}
-// robô do estudante: o servo da porta 1 (braço lateral) ou o de rotação contínua da porta 2 (escova)
-function bbPickStep(dt, pose, c) {
-    const M = BBG.mech, pk = bbPick();
-    if (pk === 'swing') {
-        let tgt = M.armCmd !== null && M.armCmd !== undefined ? M.armCmd : 0;
-        if (M.source === 'pad') {
-            // no teclado/controle: B aberto para a direita; ao fechar, varre por 0,5 s e volta para o lado do robô
-            const K = BBG.keys || {};
-            if (K.arm) { tgt = 0.35; M.swT = 0.5; } else if ((M.swT || 0) > 0) { tgt = 1; M.swT -= dt; } else tgt = 0;
-        }
-        bbSwingMove(M, tgt, dt, pose, BBG.robotV);
-    } else M.swing = Math.max(0, (M.swing || 0) - dt * 2);
-    if (pk === 'brush') bbBrushMove(M, M.source === 'pad' ? ((BBG.keys || {}).arm ? 1 : 0) : (c.roller || 0), dt, pose, BBG.robotV);
-    else M.brushPow = 0;
-}
-
-/* ---------------- outros robôs: sorteiam o mecanismo e usam cada um do seu jeito ---------------- */
-(function () {
-    const nn = mtNewNpc;
-    mtNewNpc = function () { const n = nn.apply(this, arguments); n.pick = BB_PICKS[Math.floor(Math.random() * 3)]; return n; };
-})();
-// onde o robô para em frente à FLOWER: com o braço da frente, a 19,5 pol. (o braço alcança); com o braço lateral, a FLOWER
-// fica no canto direito da frente; com a escova, no canto esquerdo da frente
-function mtFlowerSpot(n, fl) {
-    const d = fl.yaw * Math.PI / 180, h = mtNorm(fl.yaw + 180), hr = h * Math.PI / 180;
-    const loc = n.pick === 'swing' ? [12.4, -5.0] : n.pick === 'brush' ? [12.8, 5.0] : [19.5, 0];
-    return { x: fl.x - (loc[0] * Math.cos(hr) - loc[1] * Math.sin(hr)), y: fl.y - (loc[0] * Math.sin(hr) + loc[1] * Math.cos(hr)), h };
-}
-function mtFlowerWork(n, dt, T, stack) {
-    const pose = { x: n.x, y: n.y, h: n.h }, vel = { x: n.vx, y: n.vy };
-    n.intake = 1; n.armT += dt;
-    if (n.pick === 'swing') {
-        const c = n.armT % 1.3;
-        bbSwingMove(n.mech, c < 0.35 ? 0.35 : c < 0.85 ? 1 : 0, dt, pose, vel);
-    } else bbBrushMove(n.mech, 1, dt, pose, vel);
-    if (!stack.length && n.armT > 0.6) { n.task = null; n.intake = 0; }
-    if (n.armT > 9) n.task = null;
-}
-(function () {
-    const st = mtStep;
-    mtStep = function (dt) {
-        const r = st.apply(this, arguments);
-        if (mtActive()) for (const n of MATCH.npcs) {
-            const M = n.mech, pose = { x: n.x, y: n.y, h: n.h }, work = n.task && n.task.k === 'flower' && n.task.working;
-            if (!work) { M.swing = Math.max(0, (M.swing || 0) - dt * 2); M.brushPow = 0; }
-            bbIntakeLiftStep(M, pose, n.store, dt, false);
-        }
-        return r;
-    };
-})();
-
-/* ---------------- tela: escolha do mecanismo, painel do robô e ficha ---------------- */
-const BB_PICK_TXT = {
-    arm: [() => FRT('braço da frente (com rolo)', 'front arm (with roller)'), 'Braco', 'Arm'],
-    swing: [() => FRT('braço lateral (varre)', 'side arm (sweeps)'), 'BracoLateral', 'SideArm'],
-    brush: [() => FRT('escova giratória', 'spinning brush'), 'Escova', 'Brush']
-};
-(function () {
-    // a escolha fica na coluna do robô da vista 3D, junto do lançador e do intake
-    const sync = typeof v3dSync === 'function' ? v3dSync : null;
-    const addSel = () => {
-        document.querySelectorAll('.v3d-i4').forEach(i4 => {
-            const lab = i4.closest('label'); if (!lab || lab.parentNode.querySelector('.v3d-pick')) return;
-            const sel = h('select', { class: 'v3d-pre v3d-pick', onchange: e => {
-                if (typeof FR_RUN !== 'undefined' && FR_RUN && FR_RUN.phase === 'running') { e.target.value = bbPick(); toast(FRT('Pare o OpMode antes de trocar o mecanismo', 'Stop the OpMode before changing the mechanism')); return; }
-                BBG.opts.pick = e.target.value; BBG.save(); bbReset();
-                if (typeof v3dSync === 'function') v3dSync(); if (typeof v3dRender === 'function') v3dRender();
-                const b = $('fr-side-body'); if (b && b.dataset.k === 'robot') frSideTab('robot');
-            } }, ...BB_PICKS.map(k => h('option', { value: k, text: BB_PICK_TXT[k][0]() })));
-            sel.value = bbPick();
-            lab.after(h('label', { class: 'v3d-chk v3d-startl', title: FRT('Como o robô tira o POLLEN de baixo das FLOWERs: o braço da frente estende e segura a peça com o rolo; o braço lateral, no lado direito, varre a frente do robô e empurra para o intake o POLLEN da FLOWER que está no canto direito da frente; a escova, no canto esquerdo da frente, gira e puxa o POLLEN para o intake.', 'How the robot takes the bottom POLLEN out of the FLOWERs: the front arm extends and holds the piece with its roller; the side arm, on the right side, sweeps across the front of the robot and pushes into the intake the POLLEN of the FLOWER at the front-right corner; the brush, at the front-left corner, spins and pulls the POLLEN into the intake.') }, FRT('Retirada do POLLEN', 'POLLEN extraction') + ': ', sel));
-        });
-        document.querySelectorAll('.v3d-pick').forEach(s => { if (document.activeElement !== s) s.value = bbPick(); });
-    };
-    if (sync) v3dSync = function () { const r = sync.apply(this, arguments); try { addSel(); } catch (e) {} return r; };
-    setTimeout(() => { try { addSel(); } catch (e) {} }, 0);
-})();
-// linha do mecanismo no painel do robô (vista 3D)
-function bbPickStatus(pt) {
-    const M = BBG.mech, pk = bbPick();
-    if (pk === 'swing') return [`<i class="v3d-dot" style="background:rgb(${V3_COL.arm})"></i>${pt ? 'Braço lateral' : 'Side arm'}`, Math.round(bbSwingDeg(M.swing || 0)) + '°' + (M.swingStuck ? (pt ? ' · parado na parede' : ' · stopped at the wall') : '')];
-    if (pk === 'brush') return [`<i class="v3d-dot" style="background:rgb(${V3_COL.arm})"></i>${pt ? 'Escova' : 'Brush'}`, (M.brushPow || 0) > 0.3 ? (pt ? 'girando' : 'spinning') : (pt ? 'parada' : 'stopped')];
-    return null;
-}
-function bbIntakeStatus(pt) {
-    const M = BBG.mech, deg = Math.round((M.intakeLift || 0) * 180 / Math.PI), z = bbIntakeRoller(M.intakeLift || 0).z - BB_INTAKE.roller.z;
-    return [pt ? 'Rolo do intake' : 'Intake roller', deg ? (pt ? 'levantado ' : 'raised ') + deg + '° (' + z.toFixed(1).replace('.', pt ? ',' : '.') + (pt ? ' pol.)' : ' in)') : (pt ? 'no batente' : 'on the stop')];
-}
-// ficha do robô: os servos 1 e 2 conforme o mecanismo
-function bbPickRow(port) {
-    const tr = (a, b) => h('tr', { class: 'fr-bio' }, h('td', { text: a }), h('td', { text: b }));
-    const pk = bbPick();
-    if (pk === 'swing') return port === 1
-        ? tr('EH Servo port 1', FRT('BRAÇO LATERAL (Servo), no lado direito do robô, logo atrás do intake, rente ao chão (5,7 pol.): 0,0 = recolhido ao lado do robô; 0,35 = aberto para a direita; 1,0 = varrido até a frente do intake (260° no curso inteiro, em cerca de 0,45 s). Com uma FLOWER no canto direito da frente do robô, encostada, ir de 0,35 para 1,0 passa a pá pela abertura de baixo: ela tira o POLLEN de baixo (um por varrida) e o empurra para a boca do intake. Depois, volte para 0.', 'SIDE ARM (Servo), on the right side of the robot, just behind the intake, close to the floor (5.7 in): 0.0 = folded along the side of the robot; 0.35 = open to the right; 1.0 = swept to the front of the intake (260° over the full travel, in about 0.45 s). With a FLOWER at the front-right corner of the robot, touching it, going from 0.35 to 1.0 passes the paddle through the bottom opening: it takes out the bottom POLLEN (one per sweep) and pushes it to the intake mouth. Then go back to 0.'))
-        : tr('EH Servo port 2', FRT('(livre)', '(free)'));
-    if (pk === 'brush') return port === 1
-        ? tr('EH Servo port 1', FRT('(livre)', '(free)'))
-        : tr('EH Servo port 2', FRT('ESCOVA (Continuous Rotation Servo), no canto esquerdo da frente, rente ao chão (raio 2,8 pol.): setPower(+1) gira para dentro e puxa para a boca do intake o POLLEN de baixo de uma FLOWER que esteja no canto (um a cada 0,6 s) e as peças soltas que ela alcançar. Encoste a FLOWER no canto esquerdo da frente e deixe o intake ligado.', 'BRUSH (Continuous Rotation Servo), at the front-left corner, close to the floor (2.8 in radius): setPower(+1) spins inward and pulls into the intake mouth the bottom POLLEN of a FLOWER at that corner (one every 0.6 s) and any loose pieces it reaches. Put the FLOWER against the front-left corner and keep the intake on.'));
-    return null;
-}
-
-/* ---------------- exemplos de TeleOp com cada mecanismo ---------------- */
-(function () {
-    const es = bbExampleSetup;
-    bbExampleSetup = function (setup) { const o = es.apply(this, arguments); const p = setup ? setup.pick : BBG.opts.pick; o.pick = BB_PICKS.includes(p) ? p : 'arm'; return o; };
-    const en = bbExampleName;
-    bbExampleName = function (setup, pt) {
-        const N = en.apply(this, arguments), u = bbExampleSetup(setup);
-        if (u.pick === 'arm') return N;
-        const t = BB_PICK_TXT[u.pick];
-        return { cls: N.cls + (pt ? t[1] : t[2]), title: N.title + ' + ' + (pt ? (u.pick === 'swing' ? 'braço lateral' : 'escova') : (u.pick === 'swing' ? 'side arm' : 'brush')), key: N.key + '/' + u.pick };
-    };
-    const ej = bbExampleJava;
-    bbExampleJava = function (pt, setup) {
-        let s = ej.apply(this, arguments);
-        const u = bbExampleSetup(setup), L = (a, b) => pt ? a : b;
-        if (u.pick === 'arm') return s;
-        const R = (a, b) => { if (s.includes(a)) s = s.replace(a, b); };
-        const sw = u.pick === 'swing';
-        R(`//   B = ${L('estende / recolhe o braço (depois de recolher, com o intake ligado, o POLLEN do braço entra)', 'extend / retract the arm (after retracting, with the intake on, the POLLEN on the arm goes in)')}`,
-          sw ? `//   B = ${L('segure: abre o braço lateral para a direita; solte: ele varre a frente do intake, trazendo o POLLEN de baixo da FLOWER (no canto direito da frente)', 'hold: opens the side arm to the right; release: it sweeps across the front of the intake, bringing the bottom POLLEN of the FLOWER (at the front-right corner)')}`
-             : `//   B = ${L('liga / desliga a escova (com a FLOWER no canto esquerdo da frente e o intake ligado, ela puxa o POLLEN)', 'brush on / off (with the FLOWER at the front-left corner and the intake on, it pulls the POLLEN in)')}`);
-        R(`        Servo arm = hardwareMap.get(Servo.class, "arm");                   // Expansion Hub, servo 1
-        CRServo armRoller = hardwareMap.get(CRServo.class, "armRoller");   // Expansion Hub, servo 2
-`, sw ? `        Servo sideArm = hardwareMap.get(Servo.class, "sideArm");           // Expansion Hub, servo 1
-        ElapsedTime varrida = new ElapsedTime();
-` : `        CRServo brush = hardwareMap.get(CRServo.class, "brush");           // Expansion Hub, servo 2
-`);
-        R(`            // ${L('braço: B estende/recolhe; o rolo puxa enquanto o braço está fora', 'arm: B extends/retracts; the roller pulls while the arm is out')}
-            if (gamepad1.b && !bAntes) bracoFora = !bracoFora;
-            arm.setPosition(bracoFora ? 1 : 0);
-            armRoller.setPower(bracoFora ? 1 : 0);
-`, sw ? `            // ${L('braço lateral: 0 = recolhido ao lado do robô, 0,35 = aberto para a direita, 1 = na frente do intake', 'side arm: 0 = folded along the side, 0.35 = open to the right, 1 = in front of the intake')}
-            // ${L('B segurado: aberto (encoste a FLOWER no canto direito da frente); solto: varre por 0,6 s e volta para o lado', 'B held: open (put the FLOWER at the front-right corner); released: sweeps for 0.6 s and folds back')}
-            bracoFora = gamepad1.b;
-            if (bracoFora) { sideArm.setPosition(0.35); varrida.reset(); }
-            else if (varrida.seconds() < 0.6) sideArm.setPosition(1);
-            else sideArm.setPosition(0);
-` : `            // ${L('escova: B liga/desliga; girando para dentro, ela puxa o POLLEN para a boca do intake', 'brush: B on/off; spinning inward, it pulls the POLLEN to the intake mouth')}
-            if (gamepad1.b && !bAntes) bracoFora = !bracoFora;
-            brush.setPower(bracoFora ? 1 : 0);
-`);
-        R(`            telemetry.addData("${L('Braço', 'Arm')}", bracoFora ? "${L('fora', 'out')}" : "${L('dentro', 'in')}");`,
-          sw ? `            telemetry.addData("${L('Braço lateral', 'Side arm')}", bracoFora ? "${L('aberto', 'open')}" : varrida.seconds() < 0.6 ? "${L('varrendo', 'sweeping')}" : "${L('recolhido', 'folded')}");`
-             : `            telemetry.addData("${L('Escova', 'Brush')}", bracoFora ? "${L('girando', 'spinning')}" : "${L('parada', 'stopped')}");`);
-        if (sw) R('import com.qualcomm.robotcore.util.Range;\n', 'import com.qualcomm.robotcore.util.ElapsedTime;\nimport com.qualcomm.robotcore.util.Range;\n');
-        return s;
-    };
-    const ec = bbExampleConfig;
-    bbExampleConfig = function (setup) {
-        const c = ec.apply(this, arguments), u = bbExampleSetup(setup);
-        if (u.pick === 'swing') { c.exServos[1] = { port: 1, type: 'servo', name: 'sideArm' }; c.exServos[2] = { port: 2, type: 'none', name: '' }; }
-        if (u.pick === 'brush') { c.exServos[1] = { port: 1, type: 'none', name: '' }; c.exServos[2] = { port: 2, type: 'crservo', name: 'brush' }; }
-        return c;
     };
 })();
 </script>
